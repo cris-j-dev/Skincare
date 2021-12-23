@@ -1,6 +1,7 @@
 import io
 import base64
 import json
+
 import numpy as np
 import cv2
 
@@ -22,17 +23,17 @@ def get_point(label):
     return points
 
 
-def loadImage(self, file_name):
+def load_image(file_name):
     image = cv2.imread(file_name)
     return image
 
 
-def saveImage(self, image, file_name, ext="png"):
+def save_image(image, file_name, ext="png"):
     cv2.imwrite(file_name + "." + ext, image)
     return
 
 
-def base64ToImage(self, data):
+def base64_to_image(data):
     data = data.encode()
     image_data = base64.decodestring(data)
 
@@ -46,7 +47,7 @@ def base64ToImage(self, data):
     return img
 
 
-def imageToBase64(self, image):
+def image_to_base64(image):
     retval, temp = cv2.imencode(".jpg", image)
     data = base64.b64encode(temp)
     return data
