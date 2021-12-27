@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-opencv-python = "*"
 numpy = "*"
 matplotlib = "*"
 mediapipe = "*"
+opencv-python = "*"
 
 [dev-packages]
 black = "*"
