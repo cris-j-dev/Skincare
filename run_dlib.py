@@ -5,6 +5,38 @@ import base64
 import dlib
 
 
+<<<<<<< HEAD
+=======
+lines_cheek_right = [
+    (1, 36),
+    (36, 41),
+    (41, 40),
+    (40, 39),
+    (39, 31),
+    (31, 48),
+    (48, 5),
+    (5, 4),
+    (4, 3),
+    (3, 2),
+    (2, 1),
+]
+
+lines_cheek_left = [
+    (15, 45),
+    (45, 46),
+    (46, 47),
+    (47, 42),
+    (42, 35),
+    (35, 54),
+    (54, 11),
+    (11, 12),
+    (12, 13),
+    (13, 14),
+    (14, 15),
+]
+
+
+>>>>>>> 590200557881fe1c1975e4915705a6f66af2b318
 class FaceMesh:
     def __init__(self, thickness=1, circle_radius=1):
         self.detector = dlib.get_frontal_face_detector()
@@ -22,7 +54,7 @@ class FaceMesh:
 
     def base64ToImage(self, data):
         data = data.encode()
-        image_data = base64.decodestring(data)
+        image_data = base64.decodebytes(data)
 
         image_stream = io.BytesIO()
         image_stream.write(image_data)
@@ -38,6 +70,12 @@ class FaceMesh:
         data = base64.b64encode(temp)
         return data
 
+    def drawLine(self, image, point, lines):
+        for s, e in lines:
+            cv2.line(image, (point(s).x, point(s).y), (point(e).x, point(e).y), 2)
+
+        return image
+
     def run(self, data):
         # For static images:
         image = self.base64ToImage(data)
@@ -48,17 +86,19 @@ class FaceMesh:
         rects = self.detector(img, 1)
         if rects:
             for i, rect in enumerate(rects):
-                l = rect.left()
-                t = rect.top()
-                b = rect.bottom()
-                r = rect.right()
                 shape = self.predictor(img, rect)
                 for j in range(68):
                     x, y = shape.part(j).x, shape.part(j).y
+<<<<<<< HEAD
                     cv2.circle(iamge, (x, y), 1, (0, 0, 255), -1)
+=======
+                    cv2.putText(image, str(j), (x, y), 0, 1, (0, 0, 255))
+                    cv2.circle(image, (x, y), 1, (0, 0, 255), -1)
+                image = self.drawLine(image, shape.part, lines_cheek_right)
+>>>>>>> 590200557881fe1c1975e4915705a6f66af2b318
 
-            self.saveImage(img, "result_dlib")
-            base64_data = self.imageToBase64(img)
+            self.saveImage(image, "result_dlib")
+            base64_data = self.imageToBase64(image)
             return base64_data
 
         else:

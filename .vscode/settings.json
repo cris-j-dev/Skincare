@@ -1,4 +1,8 @@
 {
+<<<<<<< HEAD
   "python.pythonPath": "/home/chan/.local/share/virtualenvs/SkinCare-lMtOpuDY/bin/python",
+=======
+  "python.pythonPath": "/Users/chan/.local/share/virtualenvs/Skincare-bHfsorVE/bin/python",
+>>>>>>> 590200557881fe1c1975e4915705a6f66af2b318
   "python.formatting.provider": "black"
 }
