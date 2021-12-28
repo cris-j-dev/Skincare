@@ -2,67 +2,74 @@ import io
 import cv2
 import numpy as np
 import base64
-import dlib
+import mediapipe as mp
+import utils
 
 
 class FaceMesh:
     def __init__(self, thickness=1, circle_radius=1):
-        self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
-
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.mp_drawing_styles = mp.solutions.drawing_styles
+        self.mp_face_mesh = mp.solutions.face_mesh
+        self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
         return
-
-    def loadImage(self, file_name):
-        image = cv2.imread(file_name)
-        return image
-
-    def saveImage(self, image, file_name, ext="png"):
-        cv2.imwrite(file_name + "." + ext, image)
-        return
-
-    def base64ToImage(self, data):
-        data = data.encode()
-        image_data = base64.decodestring(data)
-
-        image_stream = io.BytesIO()
-        image_stream.write(image_data)
-        image_stream.seek(0)
-
-        file_bytes = np.asarray(bytearray(image_stream.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-
-        return img
-
-    def imageToBase64(self, image):
-        retval, temp = cv2.imencode(".jpg", image)
-        data = base64.b64encode(temp)
-        return data
 
     def run(self, data):
         # For static images:
-        image = self.base64ToImage(data)
+        with self.mp_face_mesh.FaceMesh(
+            static_image_mode=True,
+            max_num_faces=1,
+            refine_landmarks=True,
+            min_detection_confidence=0.5,
+        ) as face_mesh:
 
-        # Convert the BGR image to RGB before processing.
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Test local image
+            # image = self.loadImage("1.jpg")
+            image = utils.base64ToImage(data)
 
-        rects = self.detector(img, 1)
-        if rects:
-            for i, rect in enumerate(rects):
-                l = rect.left()
-                t = rect.top()
-                b = rect.bottom()
-                r = rect.right()
-                shape = self.predictor(img, rect)
-                for j in range(68):
-                    x, y = shape.part(j).x, shape.part(j).y
-                    cv2.circle(iamge, (x, y), 1, (0, 0, 255), -1)
+            # Convert the BGR image to RGB before processing.
+            results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            height, width, _ = image.shape
 
-            self.saveImage(img, "result_dlib")
-            base64_data = self.imageToBase64(img)
-            return base64_data
+            # Print and draw face mesh landmarks on the image.
+            if results.multi_face_landmarks:
+                annotated_image = image.copy()
 
-        else:
-            print("Not find face mesh")
+                for face_landmarks in results.multi_face_landmarks:
+
+                    for i in range(0, len(face_landmarks.landmark), 20):
+                        temp_image = image.copy()
+                        for j in range(0, 20):
+                            pt1 = face_landmarks.landmark[i + j]
+                            x = int(pt1.x * width)
+                            y = int(pt1.y * height)
+                            cv2.circle(temp_image, (x, y), 2, (255, 0, 0), -1)
+                            cv2.putText(
+                                temp_image, str(i + j), (x, y), 0, 1, (0, 0, 255)
+                            )
+
+                            # cv2.circle(black_image, (x, y), 2, (255, 0, 0), -1)
+                            # cv2.putText(black_image, str(i), (x, y), 0, 1, (0, 0, 255))
+
+                        utils.saveImage(temp_image, f"temp_{i}.png")
+
+                    # self.mp_drawing.draw_landmarks(
+                    #     image=annotated_image,
+                    #     landmark_list=face_landmarks,
+                    #     connections=lines,
+                    #     landmark_drawing_spec=None,
+                    #     connection_drawing_spec=self.mp_drawing_styles
+                    #     .get_default_face_mesh_tesselation_style())
+
+                # utils.saveImage(annotated_image, "result_mesh")
+                # utils.saveImage(image, "result_point")
+                # utils.saveImage(black_image, "result_black_point")
+                # base64_data = utils.imageToBase64(annotated_image)
+
+                return base64_data
+
+            else:
+                return "Not find face mesh"
 
 
 if __name__ == "__main__":
