@@ -59,8 +59,7 @@ def crop_image(image, points):
     """
     ## (1) Crop the bounding rect
 
-    points = np.array(points)
-    points = points.astype(np.int)
+    points = np.array(points, dtype=np.int)
 
     rect = cv2.boundingRect(points)
     x, y, w, h = rect
@@ -72,13 +71,6 @@ def crop_image(image, points):
     mask = np.zeros(croped.shape[:2], np.uint8)
     cv2.drawContours(mask, [points], -1, (255, 255, 255), -1)
 
-    mask2 = np.zeros(croped.shape[:2], np.uint8)
-    cv2.drawContours(mask2, [points], -1, 255, -1)
-
-    temp = croped[:, :, 1]
-    min_value, max_value, min_loc, max_loc = cv2.minMaxLoc(temp, mask=mask2)
-    mean_value = cv2.mean(temp, mask=mask2)
-
     ## (3) do bit-op
     dst = cv2.bitwise_and(croped, croped, mask=mask)
 
@@ -88,14 +80,19 @@ def crop_image(image, points):
     cv2.bitwise_not(bg, bg, mask=mask)
     dst2 = bg + dst
 
-    return min_value, max_value, mean_value, dst2
+    return dst2
 
 
-def color_balancing(image):
+def color_balancing(image, points):
     ret = image.copy()
-    mVr = 1 / np.mean(image[:, :, 2])
-    mVg = 1 / np.mean(image[:, :, 1])
-    mVb = 1 / np.mean(image[:, :, 0])
+
+    _,_,mean_r = get_mean_from_masked_image(image[:,:,2], points)
+    _,_,mean_g = get_mean_from_masked_image(image[:,:,1], points)
+    _,_,mean_b = get_mean_from_masked_image(image[:,:,0], points)
+
+    mVr = 1 / mean_r
+    mVg = 1 / mean_g
+    mVb = 1 / mean_b
 
     M = max(mVr, mVg, mVb)
     sr = mVr / M
@@ -113,4 +110,31 @@ def estimation_of_AC(alpha, max_value):
     mA = alpha / max_value
 
     ret, binary_image = cv2.threshold(mA, 0.2, 255, cv2.THRESH_BINARY)
-    return binary_image
+    return binary_image, mA
+
+
+def get_mean_from_masked_image(image, points):
+
+    points = np.array(points, dtype=np.int)
+
+    rect = cv2.boundingRect(points)
+    x, y, w, h = rect
+    croped = image[y : y + h, x : x + w].copy()
+
+    ## (2) make mask
+    points = points - points.min(axis=0)
+
+    mask = np.zeros(croped.shape[:2], np.uint8)
+    print("=====================")
+    print(image.shape)
+    print(points.shape)
+    print(croped.shape)
+    print(mask.shape)
+
+    cv2.drawContours(mask, [points], -1, 255, -1)
+
+    # temp = croped[:, :, 1]
+    min_value, max_value, min_loc, max_loc = cv2.minMaxLoc(image, mask=mask)
+    mean_value = cv2.mean(image, mask=mask)
+
+    return min_value, max_value, mean_value[0]

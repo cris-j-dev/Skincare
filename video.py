@@ -152,8 +152,8 @@ class FaceMesh:
 
     def crop(self, image, label):
         points = self.points_loc[label]
-        min_value, max_value, mean_value, ret = utils.crop_image(image, points)
-        return min_value, max_value, mean_value, ret
+        ret = utils.crop_image(image, points)
+        return ret
 
 
 if __name__ == "__main__":
@@ -179,22 +179,29 @@ if __name__ == "__main__":
     facemesh.set_lines()
 
     res = facemesh.draw(image)
-    res2 = utils.color_balancing(image)
-    res3 = cv2.cvtColor(res2, cv2.COLOR_BGR2Lab)
 
-    min_value, max_value, mean_value, res4 = facemesh.crop(
-        res3, "face_cheek_right_point"
-    )
+    #1 Crop and get average, min, max value
+    #2 Color Balancing
+    #3 Normalization of a*
+
+    res2 = utils.color_balancing(image, facemesh.points_loc["face_cheek_right_point"])
+    res3 = cv2.cvtColor(res2, cv2.COLOR_BGR2Lab)
+    _,max_a,_ = utils.get_mean_from_masked_image(res3[:, :, 1], facemesh.points_loc["face_cheek_right_point"])
+
+
+    res4 = facemesh.crop(res3, "face_cheek_right_point")
 
     alpha = res4[:, :, 1]
-    alpha = cv2.normalize(alpha, None, 0, 255, cv2.NORM_MINMAX)
-    res5 = utils.estimation_of_AC(alpha, max_value)
+
+    # alpha = cv2.normalize(alpha, None, 0, 255, cv2.NORM_MINMAX)
+    res5, ma = utils.estimation_of_AC(alpha, max_a)
 
     # cv2.imshow("result", res)
     # cv2.imshow("result2", res2)
     # cv2.imshow("result3", res3)
-    cv2.imshow("result4", cv2.cvtColor(res4, cv2.COLOR_LAB2BGR))
+    # cv2.imshow("result4", cv2.cvtColor(res4, cv2.COLOR_LAB2BGR))
     cv2.imshow("result5", res5)
+    cv2.imshow("ma", ma)
     cv2.imshow("alpha", alpha)
     # cv2.imshow("norm_a", norm_alpha)
 
