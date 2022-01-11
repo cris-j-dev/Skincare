@@ -86,9 +86,9 @@ def crop_image(image, points):
 def color_balancing(image, points):
     ret = image.copy()
 
-    _,_,mean_r = get_mean_from_masked_image(image[:,:,2], points)
-    _,_,mean_g = get_mean_from_masked_image(image[:,:,1], points)
-    _,_,mean_b = get_mean_from_masked_image(image[:,:,0], points)
+    _, _, mean_r = get_mean_from_masked_image(image[:, :, 2], points)
+    _, _, mean_g = get_mean_from_masked_image(image[:, :, 1], points)
+    _, _, mean_b = get_mean_from_masked_image(image[:, :, 0], points)
 
     mVr = 1 / mean_r
     mVg = 1 / mean_g
@@ -109,7 +109,9 @@ def color_balancing(image, points):
 def estimation_of_AC(alpha, max_value):
     mA = alpha / max_value
 
-    ret, binary_image = cv2.threshold(mA, 0.2, 255, cv2.THRESH_BINARY)
+    # ret, binary_image = cv2.threshold(mA, 0.18, 255, cv2.THRESH_BINARY_INV)
+    # ret, binary_image = cv2.threshold(mA, 0.17, 255, cv2.THRESH_BINARY)
+    ret, binary_image = cv2.threshold(mA, 0.15, 255, cv2.THRESH_BINARY)
     return binary_image, mA
 
 
@@ -124,17 +126,30 @@ def get_mean_from_masked_image(image, points):
     ## (2) make mask
     points = points - points.min(axis=0)
 
-    mask = np.zeros(croped.shape[:2], np.uint8)
-    print("=====================")
-    print(image.shape)
-    print(points.shape)
-    print(croped.shape)
-    print(mask.shape)
+    mask = np.zeros(croped.shape, np.uint8)
+    # print("=====================")
+    # print(image.shape)
+    # print(points.shape)
+    # print(croped.shape)
+    # print(mask.shape)
 
     cv2.drawContours(mask, [points], -1, 255, -1)
 
     # temp = croped[:, :, 1]
-    min_value, max_value, min_loc, max_loc = cv2.minMaxLoc(image, mask=mask)
-    mean_value = cv2.mean(image, mask=mask)
+    min_value, max_value, min_loc, max_loc = cv2.minMaxLoc(croped, mask=mask)
+    mean_value = cv2.mean(croped, mask=mask)
 
     return min_value, max_value, mean_value[0]
+
+
+def morphology(image, k_size=3):
+
+    # Erosion
+    k = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+    erosion = cv2.erode(image, k)
+
+    # Dilation
+    kernel = np.ones((k_size, k_size), np.uint8)
+    result = cv2.dilate(erosion, kernel, iterations=1)
+
+    return result
