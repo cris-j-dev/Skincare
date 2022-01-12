@@ -217,10 +217,11 @@ if __name__ == "__main__":
         facemesh = FaceMesh(thickness=5)
         facemesh.set_label(
             [
-                "face_cheek_right_point",
-                "face_cheek_left_point",
-                "face_forehead_point",
-                "face_chin_point",
+                # "face_cheek_right_point",
+                # "face_cheek_left_point",
+                # "face_forehead_point",
+                # "face_chin_point",
+                "face_nose_point"
             ]
         )
         image = utils.load_image(os.path.join("Test", filename))
@@ -237,6 +238,7 @@ if __name__ == "__main__":
         face_cheek_left_point = facemesh.run(image, "face_cheek_left_point")
         face_forehead_point = facemesh.run(image, "face_forehead_point")
         face_chin_point = facemesh.run(image, "face_chin_point")
+        face_nose_point = facemesh.run(image, "face_nose_point")
 
         for cnt in face_cheek_left_point:
             cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
