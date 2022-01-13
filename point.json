@@ -170,6 +170,26 @@
         122
     ],
     "face_smile_line_right_point": [
+        35,
+        126,
+        165,
+        186,
+        212,
+        214,
+        207,
+        206
+    ],
+    "face_smile_line_left_point": [
+        266,
+        358,
+        391,
+        410,
+        432,
+        434,
+        427,
+        425
+    ],
+    "face_smile_line_right_point2": [
         209,
         131,
         115,
@@ -184,7 +204,7 @@
         36,
         142
     ],
-    "face_smile_line_left_point": [
+    "face_smile_line_left_point2": [
         429,
         360,
         344,
