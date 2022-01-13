@@ -7,6 +7,9 @@ import json
 import argparse
 import mediapipe as mp
 import utils.utils as utils
+import utils.acne as acne
+import utils.lesion as lesion
+import utils.smileline as smileline 
 
 
 class FaceMesh:
@@ -156,45 +159,6 @@ class FaceMesh:
         ret = utils.crop_image(image, points)
         return ret
 
-    def run(self, image, label):
-
-        points = np.array(self.points_loc[label])
-
-        res2 = utils.color_balancing(image, self.points_loc[label])
-        res3 = cv2.cvtColor(res2, cv2.COLOR_BGR2Lab)
-        _, max_a, _ = utils.get_mean_from_masked_image(
-            res3[:, :, 1], self.points_loc[label]
-        )
-
-        res4 = self.crop(res3, label)
-
-        alpha = res4[:, :, 1]
-
-        alpha = cv2.normalize(alpha, None, 0, 255, cv2.NORM_MINMAX)
-        alpha = np.where(255 == alpha, 0, alpha)
-        res5, ma = utils.estimation_of_AC(alpha, max_a)
-        res6 = utils.morphology(res5)
-
-        # contours
-        temp = res6.copy()
-        temp = temp.astype("uint8")
-        contours, _ = cv2.findContours(temp, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        res5 = np.zeros((temp.shape[0], temp.shape[1], 3), np.uint8)
-
-        contours = np.array(contours)
-
-        for idx in range(len(contours)):
-            contours[idx] = contours[idx] + points.min(axis=0)
-            contours[idx] = contours[idx].astype("int")
-            # cv2.drawContours(res5, [cnt], -1, (0,0,255), 2)
-            # cv2.drawContours(res, [cnt2], -1, (0,0,255), 2)
-            # cv2.imshow("result", res)
-            # cv2.imshow("result5", res5)
-            # cv2.waitKey(0)
-
-        print(f"{label} Done")
-        return contours
-
 
 if __name__ == "__main__":
 
@@ -209,21 +173,23 @@ if __name__ == "__main__":
     parser.add_argument("--label", "-l", type=str, help="crop coordinate label")
     args = parser.parse_args()
 
+    facemesh = FaceMesh(thickness=5)
+    facemesh.set_label(
+        [
+            "face_cheek_right_point",
+            "face_cheek_left_point",
+            "face_forehead_point",
+            "face_chin_point",
+            "face_nose_point",
+            "face_smile_line_right_point",
+            "face_smile_line_left_point",
+        ]
+    )
+
     filelist = os.listdir("Test")
-    print(filelist)
+    for filename in filelist[:2]:
+        print(filename)
 
-    for filename in filelist:
-
-        facemesh = FaceMesh(thickness=5)
-        facemesh.set_label(
-            [
-                # "face_cheek_right_point",
-                # "face_cheek_left_point",
-                # "face_forehead_point",
-                # "face_chin_point",
-                "face_nose_point"
-            ]
-        )
         image = utils.load_image(os.path.join("Test", filename))
         # image = utils.load_image(args.filename)
 
@@ -234,32 +200,32 @@ if __name__ == "__main__":
         facemesh.set_lines()
 
         res = facemesh.draw(image)
-        face_cheek_right_point = facemesh.run(image, "face_cheek_right_point")
-        face_cheek_left_point = facemesh.run(image, "face_cheek_left_point")
-        face_forehead_point = facemesh.run(image, "face_forehead_point")
-        face_chin_point = facemesh.run(image, "face_chin_point")
-        face_nose_point = facemesh.run(image, "face_nose_point")
+        face_smile_line_right_point = smileline.run(facemesh, image, "face_smile_line_left_point")
+        # face_cheek_right_point = lesion.run(facemesh, image, "face_cheek_right_point")
+        # face_cheek_left_point  = lesion.run(facemesh, image, "face_cheek_left_point")
+        # face_forehead_point    = lesion.run(facemesh, image, "face_forehead_point")
+        # face_chin_point        = lesion.run(facemesh, image, "face_chin_point")
+        # face_nose_point        = lesion.run(facemesh, image, "face_nose_point")
 
-        for cnt in face_cheek_left_point:
-            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        for cnt in face_cheek_right_point:
-            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        for cnt in face_forehead_point:
-            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        for cnt in face_chin_point:
-            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        # detect acne
+        # face_cheek_right_point = acne.run(facemesh, image, "face_cheek_right_point")
+        # face_cheek_left_point  = acne.run(facemesh, image, "face_cheek_left_point")
+        # face_forehead_point    = acne.run(facemesh, image, "face_forehead_point")
+        # face_chin_point        = acne.run(facemesh, image, "face_chin_point")
+        # face_nose_point        = acne.run(facemesh, image, "face_nose_point")
 
-        # 1 Crop and get average, min, max value
-        # 2 Color Balancing
-        # 3 Normalization of a*
+        # for cnt in face_cheek_left_point:
+        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        # for cnt in face_cheek_right_point:
+        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        # for cnt in face_forehead_point:
+        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        # for cnt in face_chin_point:
+        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
 
-        cv2.imshow("result", res)
-        # cv2.imshow("result2", res2)
-        # cv2.imshow("result3", res3)
-        # cv2.imshow("result4", res4)
-        # cv2.imshow("result4", cv2.cvtColor(res4, cv2.COLOR_LAB2BGR))
-        # cv2.imshow("ma", ma)
-        # cv2.imshow("alpha", alpha)
-        # cv2.imshow("norm_a", norm_alpha)
+        merged = np.hstack((image, res))
 
+
+        cv2.imshow("result", merged)
+        # cv2.imwrite(f"Result/{filename}", merged)
         cv2.waitKey(0)
