@@ -8,7 +8,6 @@ import cv2
 
 def points_to_lines(points):
     res = []
-    print(len(points))
     for i in range(len(points) - 1):
         res.append((points[i], points[i + 1]))
     res.append((points[-1], points[0]))
