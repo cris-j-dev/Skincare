@@ -202,17 +202,18 @@ if __name__ == "__main__":
         facemesh.set_lines()
 
         res = facemesh.draw(image)
-        face_smile_line_right_point = smileline.run(
-            facemesh, image, "face_smile_line_right_point"
-        )
-        face_smile_line_left_point = smileline.run(
-            facemesh, image, "face_smile_line_left_point"
-        )
-        # face_cheek_right_point = lesion.run(facemesh, image, "face_cheek_right_point")
-        # face_cheek_left_point  = lesion.run(facemesh, image, "face_cheek_left_point")
-        # face_forehead_point    = lesion.run(facemesh, image, "face_forehead_point")
-        # face_chin_point        = lesion.run(facemesh, image, "face_chin_point")
-        # face_nose_point        = lesion.run(facemesh, image, "face_nose_point")
+        # face_smile_line_right_point = smileline.run(
+        #     facemesh, image, "face_smile_line_right_point"
+        # )
+        # face_smile_line_left_point = smileline.run(
+        #     facemesh, image, "face_smile_line_left_point"
+        # )
+
+        face_cheek_right_point = lesion.run(facemesh, image, "face_cheek_right_point")
+        face_cheek_left_point  = lesion.run(facemesh, image, "face_cheek_left_point")
+        face_forehead_point    = lesion.run(facemesh, image, "face_forehead_point")
+        face_chin_point        = lesion.run(facemesh, image, "face_chin_point")
+        face_nose_point        = lesion.run(facemesh, image, "face_nose_point")
 
         # detect acne
         # face_cheek_right_point = acne.run(facemesh, image, "face_cheek_right_point")
@@ -221,14 +222,14 @@ if __name__ == "__main__":
         # face_chin_point        = acne.run(facemesh, image, "face_chin_point")
         # face_nose_point        = acne.run(facemesh, image, "face_nose_point")
 
-        # for cnt in face_cheek_left_point:
-        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        # for cnt in face_cheek_right_point:
-        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        # for cnt in face_forehead_point:
-        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
-        # for cnt in face_chin_point:
-        #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        for cnt in face_cheek_left_point:
+            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        for cnt in face_cheek_right_point:
+            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        for cnt in face_forehead_point:
+            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
+        for cnt in face_chin_point:
+            cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)
 
         # for cnt in face_smile_line_right_point:
         #     # epsilon = 0.04 * cv2.arcLength(cnt, True)
@@ -250,6 +251,6 @@ if __name__ == "__main__":
 
         # merged = np.hstack((image, res))
 
-        # cv2.imshow("result", merged)
-        # cv2.imwrite(f"Result/{filename}", merged)
-        # cv2.waitKey(0)
+        cv2.imshow("result", merged)
+        cv2.imwrite(f"Result/{filename}", merged)
+        cv2.waitKey(0)

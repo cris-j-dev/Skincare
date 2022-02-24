@@ -37,25 +37,28 @@ def run(fm, image, label):
 
     # res6 = detect_shape(res4, 17, 9, 21)
 
-    # mask2 = np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]])
-    # mask3 = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
-    # out2 = cv2.filter2D(res4, -1, mask2)
+    # mask2 = np.array([[2, -1, -1], [-1, 2, -1], [-1, -1, 2]])
+    # mask3 = np.array([[-1, -1, 2], [-1, 2, -1], [2, -1, -1]])
+    mask2 = np.array([[-2, -1, 0], [-1, 0, 1], [0, 1, 2]])
+    mask3 = np.array([[0, 1, 2], [-1, 0, 1], [-2, -1, 0]])
+    out2 = cv2.filter2D(res4, -1, mask2)
+    out3 = cv2.filter2D(res4, -1, mask3)
 
     # gaussian = cv2.GaussianBlur(res4, (5, 5), 0)
     # LoG = cv2.filter2D(gaussian, -1, mask3)
 
-    canny1 = cv2.Canny(res4, 50, 200)
-    canny2 = cv2.Canny(res4, 100, 200)
-    canny3 = cv2.Canny(res4, 170, 200)
+    # canny1 = cv2.Canny(res4, 50, 200)
+    # canny2 = cv2.Canny(res4, 100, 200)
+    # canny3 = cv2.Canny(res4, 170, 200)
 
     # cv2.imshow("res4", res4)
     # cv2.imshow("gaussian", gaussian)
     # cv2.imshow("LoG", LoG)
     # cv2.imshow("embossing", out2)
     # cv2.imshow("denosied", denoised_img)
-    cv2.imshow("1", canny1)
-    cv2.imshow("2", canny2)
-    cv2.imshow("3", canny3)
+    cv2.imshow("1", out2)
+    cv2.imshow("2", out3)
+    # cv2.imshow("3", canny3)
 
     # cv2.imshow("1", d1)
     # cv2.imshow("2", d2)
