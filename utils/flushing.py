@@ -6,18 +6,22 @@ import utils
 import math
 import facemesh
 
+
 def flushing(fm, image, label):
 
     points = np.array(fm.points_loc[label])
     labImage = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
     # min_l, max_l, mean_l = utils.get_mean_from_masked_image(labImage[:,:,0], fm.points_loc[label])
-    min_a, max_a, mean_a = utils.get_mean_from_masked_image(labImage[:,:,1], fm.points_loc[label])
+    min_a, max_a, mean_a = utils.get_mean_from_masked_image(
+        labImage[:, :, 1], fm.points_loc[label]
+    )
     # min_b, max_b, mean_b = utils.get_mean_from_masked_image(labImage[:,:,2], fm.points_loc[label])
 
     print(mean_a)
 
     return mean_a
+
 
 def draw(image, points, deg):
     points = np.array(points, dtype=np.int)
@@ -32,21 +36,21 @@ def draw(image, points, deg):
     # center
     M = cv2.moments(points)
 
-    cx = int(M['m10']/M['m00'])
-    cy = int(M['m01']/M['m00'])
+    cx = int(M["m10"] / M["m00"])
+    cy = int(M["m01"] / M["m00"])
 
     point = points[0] - points[5]
-    c = math.sqrt((point[0]**2)+(point[1]**2))
-    lx = round(c/2)
-    ly = round(c/2*0.7)
+    c = math.sqrt((point[0] ** 2) + (point[1] ** 2))
+    lx = round(c / 2)
+    ly = round(c / 2 * 0.7)
     # import pdb;pdb.set_trace()
 
     alpha = 0.5
 
     # cv2.imshow("image", image)
     # cv2.imshow("mask", mask)
-    cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0,0,255), -1)
-    blended2 = cv2.addWeighted(image, 1, mask, (1-alpha), 0) # 방식2
+    cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0, 0, 255), -1)
+    blended2 = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
     # cv2.circle(blended2, (cx, cy), 10, (0,0,255), -1)
 
     return blended2
@@ -63,7 +67,7 @@ def run(fm, image):
     mean_right = flushing(faceMesh, image, "face_flushing_right_point")
     mean_left = flushing(faceMesh, image, "face_flushing_left_point")
 
-    if (mean_right + mean_left)/2 > 142:
+    if (mean_right + mean_left) / 2 > 142:
         print("flushing")
         points = faceMesh.points_loc["face_flushing_right_point"]
         res = draw(image, points, -35)
@@ -71,12 +75,10 @@ def run(fm, image):
         points = faceMesh.points_loc["face_flushing_left_point"]
         res = draw(res, points, 35)
 
-    return res 
-
+    return res
 
 
 if __name__ == "__main__":
-
 
     faceMesh = facemesh.FaceMesh(thickness=5)
     faceMesh.set_label(
@@ -95,21 +97,22 @@ if __name__ == "__main__":
         ]
     )
 
-
     path = "../Test/flushing/"
     filelist = os.listdir(path)
 
-    filelist = ["/Users/chan/Projects/Skincare/Test/flushing/drg_0000235380.jpg",
-    "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237290.jpg",
-    "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237508.jpg",
-    "/Users/chan/Projects/Skincare/Test/wrinkle/drg_0000237368.jpg",
-    "/Users/chan/Projects/Skincare/Test/acne/drg_0000235845.jpg",
-    "/Users/chan/Projects/Skincare/Test/acne/drg_0000237524.jpg"]
+    filelist = [
+        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000235380.jpg",
+        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237290.jpg",
+        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237508.jpg",
+        "/Users/chan/Projects/Skincare/Test/wrinkle/drg_0000237368.jpg",
+        "/Users/chan/Projects/Skincare/Test/acne/drg_0000235845.jpg",
+        "/Users/chan/Projects/Skincare/Test/acne/drg_0000237524.jpg",
+    ]
 
     for filename in filelist[:]:
-    # filename = "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237452.jpg"
-        if filename.split(".")[1] == 'jpg':
-            print(path+filename)
+        # filename = "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237452.jpg"
+        if filename.split(".")[1] == "jpg":
+            print(path + filename)
             image = cv2.imread(filename)
 
             res = run(faceMesh, image)
@@ -135,7 +138,6 @@ if __name__ == "__main__":
             # # flushing(faceMesh, image, "face_forehead_point")
             # # flushing(faceMesh, image, "face_chin_point")
             # # flushing(faceMesh, image, "face_nose_point")
-
 
             # points = faceMesh.points_loc["face_flushing_right_point"]
             # points = np.array(points, dtype=np.int)
@@ -164,9 +166,5 @@ if __name__ == "__main__":
 
             # cv2.imshow("res", blended2)
 
-
             # cv2.imwrite("./"+filename.split("/")[-1], res)
             # # cv2.waitKey(0)
-
-
-
