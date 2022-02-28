@@ -1,3 +1,8 @@
 *.png
 *.jpg
 *.bmp
+.DS_Store
+
+*.pyc
+
+settings.json
