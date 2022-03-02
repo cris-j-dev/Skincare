@@ -13,7 +13,6 @@ import utils.smileline as smileline
 import utils.FaceMesh as FaceMesh
 
 
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Process some integers.")
@@ -66,14 +65,12 @@ if __name__ == "__main__":
         # face_chin_point        = lesion.run(facemesh, image, "face_chin_point")
         # face_nose_point        = lesion.run(facemesh, image, "face_nose_point")
 
-
         # detect acne 여드름
         # face_cheek_right_point = acne.run(facemesh, image, "face_cheek_right_point")
         # face_cheek_left_point  = acne.run(facemesh, image, "face_cheek_left_point")
         # face_forehead_point    = acne.run(facemesh, image, "face_forehead_point")
         # face_chin_point        = acne.run(facemesh, image, "face_chin_point")
         # face_nose_point        = acne.run(facemesh, image, "face_nose_point")
-
 
         # for cnt in face_cheek_left_point:
         #     cv2.drawContours(res, [cnt], -1, (0, 0, 255), 2)

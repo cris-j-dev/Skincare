@@ -52,7 +52,7 @@ def image_to_base64(image):
     return data
 
 
-def crop_image(image, points):
+def crop_image(image, points, bg_value="black"):
     """
     points = [ [x1, y1], [x2, y2], ... , [xn, yn] ]
     """
@@ -74,8 +74,13 @@ def crop_image(image, points):
     dst = cv2.bitwise_and(croped, croped, mask=mask)
 
     ## (4) add the white background
-    # bg = np.ones_like(croped, np.uint8) * 255 # white
-    bg = np.ones_like(croped, np.uint8) * 255  # black
+    if bg_value == "black":
+        bg = np.zeros_like(croped, np.uint8) # black
+    elif bg_value == "white":
+        bg = np.ones_like(croped, np.uint8) * 255  # withe
+    else:
+        bg = np.ones_like(croped, np.uint8) * bg_value 
+
     cv2.bitwise_not(bg, bg, mask=mask)
     dst2 = bg + dst
 
@@ -110,7 +115,7 @@ def estimation_of_AC(alpha, max_value):
 
     # ret, binary_image = cv2.threshold(mA, 0.18, 255, cv2.THRESH_BINARY_INV)
     # ret, binary_image = cv2.threshold(mA, 0.17, 255, cv2.THRESH_BINARY)
-    ret, binary_image = cv2.threshold(mA, 0.15, 255, cv2.THRESH_BINARY)
+    ret, binary_image = cv2.threshold(mA, 0.8, 255, cv2.THRESH_BINARY)
     return binary_image, mA
 
 
