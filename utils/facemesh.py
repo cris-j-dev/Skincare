@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import json
 import mediapipe as mp
-import utils
+import utils.utils as utils
 
 
 class FaceMesh:
-    def __init__(self, filename="point.json", thickness=1, circle_radius=1):
+    def __init__(self, filename="src/face_type/point.json", thickness=1, circle_radius=1):
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
         self.mp_face_mesh = mp.solutions.face_mesh
@@ -24,21 +24,6 @@ class FaceMesh:
         with open(filename, "r") as st_json:
             st_python = json.load(st_json)
         self.points = st_python
-
-        # point_left = utils.get_point("face_cheek_left_point")
-        # point_right = utils.get_point("face_cheek_right_point")
-        # point_forehead = utils.get_point("face_forehead_point")
-        # point_chin = utils.get_point("face_chin_point")
-
-        # lines_left = utils.points_to_lines(point_left)
-        # lines_right = utils.points_to_lines(point_right)
-        # lines_forehead = utils.points_to_lines(point_forehead)
-        # lines_chin = utils.points_to_lines(point_chin)
-
-        # self.point = point_left + point_right + point_forehead + point_chin
-        # self.cheek_lines = frozenset(lines_left + lines_right)
-        # self.forehead_lines = frozenset(lines_forehead)
-        # self.chin_lines = frozenset(lines_chin)
 
         return
 
@@ -66,61 +51,6 @@ class FaceMesh:
 
         self.lines = lines
         return lines
-
-    # def run(self, data):
-    #     # For static images:
-    #     with self.mp_face_mesh.FaceMesh(
-    #         static_image_mode=True,
-    #         max_num_faces=1,
-    #         refine_landmarks=True,
-    #         min_detection_confidence=0.5,
-    #     ) as face_mesh:
-
-    #         # Test local image
-    #         # image = self.load_image("1.jpg")
-    #         image = utils.base64_to_image(data)
-
-    #         # Convert the BGR image to RGB before processing.
-    #         results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    #         height, width, _ = image.shape
-    #         # Print and draw face mesh landmarks on the image.
-    #         if results.multi_face_landmarks:
-    #             annotated_image = image.copy()
-
-    #             for face_landmarks in results.multi_face_landmarks:
-
-    #                 # for i in range(300, 330):
-    #                 for i in self.point:
-    #                     pt1 = face_landmarks.landmark[i]
-    #                     x = int(pt1.x * width)
-    #                     y = int(pt1.y * height)
-    #                     cv2.circle(image, (x, y), 2, (255, 0, 0), -1)
-    #                     cv2.putText(image, str(i), (x, y), 0, 1, (0, 0, 255))
-
-    #                 self.mp_drawing.draw_landmarks(
-    #                     image=annotated_image,
-    #                     landmark_list=face_landmarks,
-    #                     connections=self.cheek_lines,
-    #                     landmark_drawing_spec=None,
-    #                     connection_drawing_spec=self.mp_drawing_styles.get_default_face_mesh_tesselation_style(),
-    #                 )
-
-    #                 self.mp_drawing.draw_landmarks(
-    #                     image=annotated_image,
-    #                     landmark_list=face_landmarks,
-    #                     connections=self.forehead_lines,
-    #                     landmark_drawing_spec=None,
-    #                     connection_drawing_spec=self.mp_drawing_styles.get_default_face_mesh_tesselation_style(),
-    #                 )
-
-    #             utils.save_image(annotated_image, "result_mesh")
-    #             utils.save_image(image, "result_point")
-    #             base64_data = self.image_to_base64(annotated_image)
-
-    #             return base64_data
-
-    #         else:
-    #             return "Not find face mesh"
 
     def detect_face_point(self, image):
         results = self.face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
@@ -151,3 +81,4 @@ class FaceMesh:
         points = self.points_loc[label]
         ret = utils.crop_image(image, points)
         return ret
+

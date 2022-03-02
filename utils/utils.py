@@ -79,7 +79,7 @@ def crop_image(image, points, bg_value="black"):
     elif bg_value == "white":
         bg = np.ones_like(croped, np.uint8) * 255  # withe
     else:
-        bg = np.ones_like(croped, np.uint8) * bg_value 
+        bg = np.ones_like(croped, np.uint8) * bg_value
 
     cv2.bitwise_not(bg, bg, mask=mask)
     dst2 = bg + dst
@@ -157,3 +157,4 @@ def morphology(image, k_size=3):
     result = cv2.dilate(erosion, kernel, iterations=1)
 
     return result
+
