@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import json
 import mediapipe as mp
-import utils.utils as utils
+import src.face_type.utils as utils
 
 
 class FaceMesh:

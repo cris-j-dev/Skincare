@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import cv2
-import utils.utils as utils
-import utils.facemesh as facemesh
+import src.face_type.utils as utils
+import src.face_type.facemesh as facemesh
 
 class Acnes:
     def __init__(self):
@@ -41,9 +41,12 @@ class Acnes:
         x, y, w, h = rect
         H, W, C = image.shape
         mask = np.zeros((H, W, 3), dtype=np.uint8)
-        # mask[y:y+h,x:x+w,2] = pore
 
         acnes = acnes.astype(np.uint8)
+
+        kernel = np.ones((3, 3), np.uint8)
+        acnes = cv2.dilate(acnes, kernel)
+        acnes = cv2.dilate(acnes, kernel)
         # temp = np.zeros((h,w), dtype=np.uint8)
         temp = image.copy()
         contours, hirerarchy = cv2.findContours(acnes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)

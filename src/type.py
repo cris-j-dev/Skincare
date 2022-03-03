@@ -1,10 +1,10 @@
-import utils.acnes as acnes
-import utils.flushings as flushings
-import utils.lesions as lesions
-import utils.pores as pores
-import utils.wrinkles as wrinkles
-import utils.utils as utils
-import utils.facemesh as facemesh
+import src.face_type.acnes as acnes
+import src.face_type.flushings as flushings
+import src.face_type.lesions as lesions
+import src.face_type.pores as pores
+import src.face_type.wrinkles as wrinkles
+import src.face_type.utils as utils
+import src.face_type.facemesh as facemesh
 
 
 class FaceType:
@@ -45,5 +45,5 @@ class FaceType:
         img_wrinkles = self.wrinkles.run(self.facemesh, image)
         img_pores = self.pores.run(self.facemesh, image)
 
-        # return img_acne
-        return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores
+        return img_acnes
+        # return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores

@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import cv2
-import utils
 import math
-import utils.facemesh as facemesh
+import src.face_type.utils as utils
+import src.face_type.facemesh as facemesh
 
 class Flushings:
     def __init__(self):
@@ -28,8 +28,8 @@ class Flushings:
     def draw(self, image, points, deg):
         points = np.array(points, dtype=np.int)
         h, w, c = image.shape
-        faceMesh.set_points_loc(w=w, h=h)
-        faceMesh.set_lines()
+        # faceMesh.set_points_loc(w=w, h=h)
+        # faceMesh.set_lines()
 
         mask = np.zeros((h, w, 3), dtype=np.uint8)
 
@@ -60,22 +60,22 @@ class Flushings:
 
     def run(self, fm, image):
 
-        multi_face_landmarks = faceMesh.detect_face_point(image)
+        multi_face_landmarks = fm.detect_face_point(image)
         h, w, c = image.shape
-        faceMesh.set_points_loc(w=w, h=h)
-        faceMesh.set_lines()
+        fm.set_points_loc(w=w, h=h)
+        fm.set_lines()
 
         res = image.copy()
-        mean_right = flushing(faceMesh, image, "face_flushing_right_point")
-        mean_left = flushing(faceMesh, image, "face_flushing_left_point")
+        mean_right = self.flushings(fm, image, "face_flushing_right_point")
+        mean_left = self.flushings(fm, image, "face_flushing_left_point")
 
         if (mean_right + mean_left) / 2 > 142:
             print("flushing")
-            points = faceMesh.points_loc["face_flushing_right_point"]
-            res = draw(image, points, -35)
+            points = fm.points_loc["face_flushing_right_point"]
+            res = self.draw(image, points, -35)
 
-            points = faceMesh.points_loc["face_flushing_left_point"]
-            res = draw(res, points, 35)
+            points = fm.points_loc["face_flushing_left_point"]
+            res = self.draw(res, points, 35)
 
         return res
 

@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-import utils.utils as utils
+import src.face_type.utils as utils
 
 
 def detect_shape(img, size, size2, size3):

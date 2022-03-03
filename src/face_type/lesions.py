@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import cv2
-import utils.utils as utils
-import utils.facemesh as facemesh
+import src.face_type.utils as utils
+import src.face_type.facemesh as facemesh
 
 class Lesions:
     def __init__(self):

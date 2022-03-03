@@ -1,9 +1,8 @@
 import os
 import numpy as np
 import cv2
-import math
-import utils.utils as utils
-import utils.facemesh as facemesh
+import src.face_type.utils as utils
+import src.face_type.facemesh as facemesh
 
 class Pores:
     def __init__(self):
