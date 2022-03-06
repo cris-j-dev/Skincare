@@ -25,6 +25,10 @@ class Pores:
         #cv2.imshow("black", blackhat_img)
         ret, res = cv2.threshold(blackhat_img, 10, 255, cv2.THRESH_BINARY)
 
+        kernel = np.ones((3, 3), np.uint8)
+        res = cv2.dilate(res, kernel)
+        res = cv2.dilate(res, kernel)
+
         return res
 
 

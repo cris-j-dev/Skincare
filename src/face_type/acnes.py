@@ -16,20 +16,26 @@ class Acnes:
         res2 = utils.color_balancing(image, points)
         res3 = cv2.cvtColor(res2, cv2.COLOR_BGR2Lab)
         _, max_a, avg_a = utils.get_mean_from_masked_image( res3[:, :, 1], points)
-        if max_a > 134:
-            res3 = utils.crop_image(res3, points)
+        res4 = utils.crop_image(res3, points)
 
-            alpha = res3[:, :, 1]
+        print(max_a)
+        if max_a > 134:
+
+            alpha = res4[:, :, 1]
             mask=cv2.inRange(alpha,0,10)
             alpha[mask==255]=avg_a
+
+            # kernel = np.ones((3, 3), np.uint8)
+            # alpha = cv2.dilate(alpha, kernel)
+            # alpha = cv2.dilate(alpha, kernel)
 
             alpha = cv2.normalize(alpha, None, 0, 255, cv2.NORM_MINMAX)
             res5, ma = utils.estimation_of_AC(alpha, 255)
             res6 = utils.morphology(res5)
             ret, res = cv2.threshold(res6, 230, 255, cv2.THRESH_BINARY)
 
-            return res
-        return None
+            return res, res4
+        return None, res4
 
 
     def draw(self, image, acnes, points):
@@ -44,9 +50,6 @@ class Acnes:
 
         acnes = acnes.astype(np.uint8)
 
-        kernel = np.ones((3, 3), np.uint8)
-        acnes = cv2.dilate(acnes, kernel)
-        acnes = cv2.dilate(acnes, kernel)
         # temp = np.zeros((h,w), dtype=np.uint8)
         temp = image.copy()
         contours, hirerarchy = cv2.findContours(acnes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -73,6 +76,7 @@ class Acnes:
         mask = np.zeros((H, W, 3), dtype=np.uint8)
         # mask[y:y+h,x:x+w,0] = acnes
         # mask[y:y+h,x:x+w,1] = acnes
+
         mask[y:y+h,x:x+w,2] = acnes
 
 
@@ -84,6 +88,18 @@ class Acnes:
 
         return blended2
 
+    def draw3(self, image, acnes, points):
+
+        if acnes is None:
+            return image
+
+        rect = cv2.boundingRect(points)
+        x, y, w, h = rect
+        acnes = acnes.astype(np.uint8)
+
+        image[y:y+h,x:x+w] = acnes
+
+        return image
 
     def crop(self, image, points):
         res = utils.crop_image(image, points)
@@ -100,7 +116,8 @@ class Acnes:
         fm.set_points_loc(w=w, h=h)
         fm.set_lines()
 
-        res = image.copy()
+        # lab = image.copy()
+        lab = np.zeros((h, w, c), dtype=np.uint8)
         # print("res.shape : ", res.shape)
         
         face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=np.int)
@@ -109,11 +126,11 @@ class Acnes:
         face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype=np.int)
         face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype=np.int)
 
-        cheek_right = self.acnes(image, face_cheek_right_point)
-        cheek_left  = self.acnes(image, face_cheek_left_point)
-        forehead    = self.acnes(image, face_forehead_point)
-        chin        = self.acnes(image, face_chin_point)
-        nose        = self.acnes(image, face_nose_point)
+        cheek_right, lab_right = self.acnes(image, face_cheek_right_point)
+        cheek_left , lab_left = self.acnes(image, face_cheek_left_point)
+        forehead   , lab_forehead = self.acnes(image, face_forehead_point)
+        chin       , lab_chin = self.acnes(image, face_chin_point)
+        nose       , lab_nose = self.acnes(image, face_nose_point)
 
         res = self.draw(image, cheek_right, face_cheek_right_point)
         res = self.draw(res,   cheek_left , face_cheek_left_point)
@@ -121,9 +138,16 @@ class Acnes:
         res = self.draw(res,   chin       , face_chin_point)
         res = self.draw(res,   nose       , face_nose_point)
 
+        res2 = self.draw3(lab, lab_right, face_cheek_right_point)
+        res2 = self.draw3(res2,   lab_left , face_cheek_left_point)
+        res2 = self.draw3(res2,   lab_forehead   , face_forehead_point)
+        res2 = self.draw3(res2,   lab_chin       , face_chin_point)
+        res2 = self.draw3(res2,   lab_nose       , face_nose_point)
+
+
 
         # print("res.shape : ", res.shape)
-        return res
+        return res, res2
 
 
 if __name__ == "__main__":
@@ -141,16 +165,18 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "../Test/acne/"
+    path = "data/"
     filelist = os.listdir(path)
+    acens = Acnes()
     # print(filelist)
     for filename in filelist[:]:
         if filename.split(".")[-1] == "jpg":
      #       print(path+filename)
             image = cv2.imread(path + filename)
 
-            res = run(faceMesh, image)
+            res, res2 = acens.run(faceMesh, image)
             merged = np.hstack((image, res))
+            merged = np.hstack((merged, res2))
             # cv2.imshow("result", merged)
             cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)
             # cv2.waitKey(0)

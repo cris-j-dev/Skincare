@@ -2,11 +2,13 @@ import cv2
 import numpy as np
 import json
 import mediapipe as mp
-import src.face_type.utils as utils
+# import src.face_type.utils as utils
+import utils as utils
 
 
 class FaceMesh:
-    def __init__(self, filename="src/face_type/point.json", thickness=1, circle_radius=1):
+    # def __init__(self, filename="src/face_type/point.json", thickness=1, circle_radius=1):
+    def __init__(self, filename="point.json", thickness=1, circle_radius=1):
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
         self.mp_face_mesh = mp.solutions.face_mesh

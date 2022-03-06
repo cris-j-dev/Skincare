@@ -20,7 +20,7 @@ class Flushings:
         )
         # min_b, max_b, mean_b = utils.get_mean_from_masked_image(labImage[:,:,2], fm.points_loc[label])
 
-        print(mean_a)
+        # print(mean_a)
 
         return mean_a
 
@@ -70,12 +70,12 @@ class Flushings:
         mean_left = self.flushings(fm, image, "face_flushing_left_point")
 
         if (mean_right + mean_left) / 2 > 142:
-            print("flushing")
+            # print("flushing")
             points = fm.points_loc["face_flushing_right_point"]
-            res = self.draw(image, points, -35)
+            res = self.draw(image, points, -45)
 
             points = fm.points_loc["face_flushing_left_point"]
-            res = self.draw(res, points, 35)
+            res = self.draw(res, points, 45)
 
         return res
 

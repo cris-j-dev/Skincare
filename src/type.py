@@ -38,12 +38,11 @@ class FaceType:
 
     def run(self, image):
 
-        print("run")
         img_flushings = self.flushings.run(self.facemesh, image)
-        img_acnes = self.acnes.run(self.facemesh, image)
+        img_acnes, temp = self.acnes.run(self.facemesh, image)
         img_lesions = self.lesions.run(self.facemesh, image)
         img_wrinkles = self.wrinkles.run(self.facemesh, image)
         img_pores = self.pores.run(self.facemesh, image)
 
-        return img_acnes
-        # return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores
+        # return img_acnes, temp
+        return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores

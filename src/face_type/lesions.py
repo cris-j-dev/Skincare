@@ -12,9 +12,13 @@ class Lesions:
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (25, 25), 0, borderType=cv2.BORDER_ISOLATED)
+        kernel = np.ones((3, 3), np.uint8)
+        blur = cv2.dilate(blur, kernel)
+        blur = cv2.dilate(blur, kernel)
         res = cv2.adaptiveThreshold(
             blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2
         )
+
 
         return res
 
