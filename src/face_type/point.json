@@ -1,15 +1,16 @@
 {
+  "face_waterbalance_center_point": [50, 205, 280, 425],
   "face_oil_point": [67,10, 297, 299, 151, 69, 4],
-  "face_flushing_right_point2": [
+  "face_flushings_right_point2": [
     119, 118, 123, 147, 187, 207, 206, 203, 142, 100
   ],
-  "face_flushing_right_point": [
+  "face_flushings_right_point": [
     119, 118, 50, 207, 206, 203, 142, 100
   ],
-  "face_flushing_left_point2": [
+  "face_flushings_left_point2": [
     329, 348, 347, 352, 376, 411, 427, 426, 423, 371
   ],
-  "face_flushing_left_point": [
+  "face_flushings_left_point": [
     329, 348, 347, 280, 427, 426, 423, 371
   ],
   "face_cheek_right_point": [

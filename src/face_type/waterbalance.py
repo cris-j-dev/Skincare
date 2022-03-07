@@ -15,23 +15,42 @@ class WaterBalance:
         return
     
     def draw_oil(self, image, points):
-        points = np.array(points, dtype=np.int)
+        # T zone
+        # points = np.array(points, dtype=np.uint8)
+        rect = cv2.boundingRect(points)
+        x, y, w, h = rect
 
-        import pdb;pdb.set_trace()
-        mask = np.zeros((h, w, 3), dtype=np.uint8)
+        mask = np.zeros(image.shape, dtype=np.uint8)
 
-        cx = int((points[1][0] + points[4][0] )/2)
-        cy = int((points[1][1] + points[4][1] )/2)
-        lx = int(points[1][0] - points[0][0])
-        ly = int(points[4][1] - points[1][1])
+        # cx = int((points[1][0] + points[4][0] )/2)
+        # cy = int((points[1][1] + points[4][1] )/2)
+        # lx = int(points[1][0] - points[0][0])
+        # ly = int(points[4][1] - points[1][1])
+
+        thin = int((points[4][1]-points[1][1]))
+
+        start_x = int((points[0][0] + points[5][0]) / 2)
+        start_y = int((points[0][1] + points[5][1]) / 2)
+        end_x = int((points[2][0] + points[3][0]) / 2)
+        end_y = int((points[2][1] + points[3][1]) / 2)
+
+        cv2.line(mask, (points[5]), (points[3]), (255,255,255), thin, cv2.LINE_AA)
+        # cv2.line(mask, (start_x, start_y), (end_x, end_y), (255,255,255), thin, cv2.LINE_AA)
+        # cv2.line(image, (start_x, start_y), (end_x, end_y), (255,255,255), thin, cv2.LINE_AA)
+
+        start_x = int((points[0][0] + points[5][0]) / 2)
+        start_y = int((points[0][1] + points[5][1]) / 2)
+
+        cv2.line(mask, points[4], points[6], (255,255,255), thin, cv2.LINE_AA)
 
         alpha = 0.75
 
-        cv2.ellipse(mask, (cx, cy), (lx, ly), 0, 0, 360, (255, 255, 255), -1)
-        blended2 = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
+        # cv2.ellipse(mask, (cx, cy), (lx, ly), 0, 0, 360, (255, 255, 255), -1)
+        res = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
+        return res 
 
-    def draw_water(self, image, points, deg):
-        points = np.array(points, dtype=np.int)
+    def draw_water(self, image, points, center, deg):
+
         h, w, c = image.shape
         # faceMesh.set_points_loc(w=w, h=h)
         # faceMesh.set_lines()
@@ -43,19 +62,21 @@ class WaterBalance:
         # center
         M = cv2.moments(points)
 
-        cx = int(M["m10"] / M["m00"])
-        cy = int(M["m01"] / M["m00"])
+        # cx = int(M["m10"] / M["m00"])
+        # cy = int(M["m01"] / M["m00"])
 
         point = points[0] - points[5]
         c = math.sqrt((point[0] ** 2) + (point[1] ** 2))
         lx = round(c * 0.8)
-        ly = round(c * 0.5)
-        # import pdb;pdb.set_trace()
+        ly = round(c * 0.55)
 
         alpha = 0.75
 
         # cv2.imshow("image", image)
         # cv2.imshow("mask", mask)
+        cx = int((center[0][0]+center[1][0])/2)
+        cy = int((center[0][1]+center[1][1])/2)
+
         cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (255, 255, 255), -1)
         blended2 = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
         # cv2.circle(blended2, (cx, cy), 10, (0,0,255), -1)
@@ -70,21 +91,24 @@ class WaterBalance:
         fm.set_points_loc(w=w, h=h)
         fm.set_lines()
 
-        res = image.copy()
+        res_water = image.copy()
+        res_oil = image.copy()
 
         # water
-        points = fm.points_loc["face_flushing_right_point"]
-        res_water = self.draw_water(res, points, -50)
+        center = np.array(fm.points_loc["face_waterbalance_center_point"], dtype=np.int)
+        points = np.array(fm.points_loc["face_flushing_right_point"], dtype=np.int)
+        res_water = self.draw_water(res_water, points, center[0:2], -110)
 
-        points = fm.points_loc["face_flushing_left_point"]
-        res_water = self.draw_water(res_water, points, 50)
+        points = np.array(fm.points_loc["face_flushing_left_point"], dtype=np.int)
+        res_water = self.draw_water(res_water, points, center[2:4], 110)
+
 
         # oil
-        points = fm.points_loc["face_oil_point"]
-        res_oil = self.draw_oil(res, points)
+        points = np.array(fm.points_loc["face_oil_point"], dtype=np.int)
+        res_oil = self.draw_oil(res_oil, points)
 
 
-        return res
+        return res_water, res_oil
 
 
 if __name__ == "__main__":
@@ -92,8 +116,9 @@ if __name__ == "__main__":
     faceMesh = facemesh.FaceMesh(thickness=5)
     faceMesh.set_label(
         [
-            "face_flushing_right_point",
-            "face_flushing_left_point",
+            "face_waterbalance_center_point",
+            "face_flushings_right_point",
+            "face_flushings_left_point",
             "face_oil_point"
             # "face_flushing_right_point2",
             # "face_flushing_left_point2",
@@ -109,7 +134,7 @@ if __name__ == "__main__":
 
     waterbalance = WaterBalance()
 
-    path = "Test/"
+    path = "data/"
     filelist = os.listdir(path)
 
     # filelist = [
@@ -127,6 +152,7 @@ if __name__ == "__main__":
             print(path + filename)
             image = cv2.imread(path+filename)
 
-            res = waterbalance.run(faceMesh, image)
-            # cv2.imshow("result", res)
-            # cv2.waitKey(0)
+            water, oil = waterbalance.run(faceMesh, image)
+            cv2.imshow("water", water)
+            cv2.imshow("oil", oil)
+            cv2.waitKey(0)
