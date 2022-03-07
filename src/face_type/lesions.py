@@ -1,8 +1,14 @@
 import os
+import sys
 import numpy as np
 import cv2
-import src.face_type.utils as utils
-import src.face_type.facemesh as facemesh
+import utils as utils
+import facemesh as facemesh
+# import src.face_type.utils as utils
+# import src.face_type.facemesh as facemesh
+
+sys.path.append('src')
+sys.path.append('src/face_type')
 
 class Lesions:
     def __init__(self):
@@ -32,8 +38,6 @@ class Lesions:
         gray = cv2.cvtColor(res3, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (25, 25), 0, borderType=cv2.BORDER_ISOLATED)
 
-
-
         res = cv2.adaptiveThreshold(
             blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2
         )
@@ -49,14 +53,24 @@ class Lesions:
 
         H, W, C = image.shape
 
-        mask = np.zeros((H, W, 3), dtype=np.uint8)
+        # mask = np.zeros((H, W, 3), dtype=np.uint8)
 
-        mask[y:y+h, x:x+w,1] = lesions
+        # mask[y:y+h, x:x+w,1] = lesions
+        # mask[y:y+h, x:x+w,2] = lesions
 
-        alpha = 0.1
-        res = cv2.addWeighted(image, 1, mask, (1-alpha), 0)
+        res = image.copy()
+        index_list = np.array(list(np.where(lesions==255)))
+        for index in zip(index_list[0], index_list[1]):
+            res[y+index[0], x+index[1], 0] = 0
+            res[y+index[0], x+index[1], 1] = 255
+            res[y+index[0], x+index[1], 2] = 255
 
-        return res
+
+
+        # alpha = 1.5 
+        # res = cv2.addWeighted(image, 1, mask, (1-alpha), 0)
+
+        return res 
 
     def crop(self, image, points):
         res = utils.crop_image(image, points, "white")
@@ -112,8 +126,10 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "../Test/"
+    path = "Test/"
     filelist = os.listdir(path)
+
+    lesions = Lesions()
 
     print(filelist)
     for filename in filelist[:]:
@@ -121,7 +137,8 @@ if __name__ == "__main__":
             print(path+filename)
             image = cv2.imread(path + filename)
 
-            res = run(faceMesh, image)
+            res = lesions.run(faceMesh, image)
             merged = np.hstack((image, res))
-            # cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_lesions.png", merged)
+            cv2.imshow("result", merged)
+            # cv2.imwrite(path+filename.split(".")[0]+"_lesions.png", merged)
+            cv2.waitKey(0)

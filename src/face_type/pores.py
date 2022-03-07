@@ -1,8 +1,13 @@
 import os
+import sys
 import numpy as np
 import cv2
-import src.face_type.utils as utils
-import src.face_type.facemesh as facemesh
+import utils as utils
+import facemesh as facemesh
+# import src.face_type.utils as utils
+# import src.face_type.facemesh as facemesh
+sys.path.append('src')
+sys.path.append('src/face_type')
 
 class Pores:
     def __init__(self):
@@ -40,18 +45,23 @@ class Pores:
 
         H, W, C = image.shape
 
-        mask = np.zeros((H, W, 3), dtype=np.uint8)
+        # mask = np.zeros((H, W, 3), dtype=np.uint8)
         # mask[y:y+h,x:x+w,0] = pores
-        mask[y:y+h,x:x+w,1] = pores
-        mask[y:y+h,x:x+w,2] = pores
+        # mask[y:y+h,x:x+w,1] = pores
+        # mask[y:y+h,x:x+w,2] = pores
 
-        alpha = 0.1 
+        # alpha = 0.1 
 
-        # cv2.imshow("image", image)
-        # cv2.imshow("mask", mask)
-        # cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0, 0, 255), -1)
-        res = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
+        # # cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0, 0, 255), -1)
+        # res = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
         # cv2.circle(blended2, (cx, cy), 10, (0,0,255), -1)
+
+        res = image.copy()
+        index_list = np.array(list(np.where(pores==255)))
+        for index in zip(index_list[0], index_list[1]):
+            res[y+index[0], x+index[1], 0] = 0
+            res[y+index[0], x+index[1], 1] = 255
+            res[y+index[0], x+index[1], 2] = 0
 
         return res 
 
@@ -106,8 +116,10 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "../Test/pore/"
+    path = "Test/"
     filelist = os.listdir(path)
+
+    pores = Pores()
 
     print(filelist)
     for filename in filelist[:]:
@@ -115,8 +127,8 @@ if __name__ == "__main__":
             print(path+filename)
             image = cv2.imread(path + filename)
 
-            res = run(faceMesh, image)
+            res = pores.run(faceMesh, image)
             merged = np.hstack((image, res))
             cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_pores.png", merged)
+            # cv2.imwrite(path+filename.split(".")[0]+"_pores.png", merged)
             cv2.waitKey(0)

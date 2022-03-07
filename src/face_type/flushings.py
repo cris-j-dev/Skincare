@@ -1,9 +1,14 @@
 import os
+import sys
 import numpy as np
 import cv2
 import math
-import src.face_type.utils as utils
-import src.face_type.facemesh as facemesh
+import utils as utils
+import facemesh as facemesh
+# import src.face_type.utils as utils
+# import src.face_type.facemesh as facemesh
+sys.path.append('src')
+sys.path.append('src/face_type')
 
 class Flushings:
     def __init__(self):
@@ -43,15 +48,15 @@ class Flushings:
 
         point = points[0] - points[5]
         c = math.sqrt((point[0] ** 2) + (point[1] ** 2))
-        lx = round(c / 2)
-        ly = round(c / 2 * 0.7)
+        lx = round(c * 0.8)
+        ly = round(c * 0.5)
         # import pdb;pdb.set_trace()
 
-        alpha = 0.5
+        alpha = 0.75
 
         # cv2.imshow("image", image)
         # cv2.imshow("mask", mask)
-        cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0, 0, 255), -1)
+        cv2.ellipse(mask, (cx, cy), (lx, ly), deg, 0, 360, (0, 21, 255), -1)
         blended2 = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
         # cv2.circle(blended2, (cx, cy), 10, (0,0,255), -1)
 
@@ -72,10 +77,10 @@ class Flushings:
         if (mean_right + mean_left) / 2 > 142:
             # print("flushing")
             points = fm.points_loc["face_flushing_right_point"]
-            res = self.draw(image, points, -45)
+            res = self.draw(image, points, -50)
 
             points = fm.points_loc["face_flushing_left_point"]
-            res = self.draw(res, points, 45)
+            res = self.draw(res, points, 50)
 
         return res
 
@@ -99,25 +104,27 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "../Test/flushing/"
+    flushings = Flushings()
+
+    path = "Test/"
     filelist = os.listdir(path)
 
-    filelist = [
-        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000235380.jpg",
-        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237290.jpg",
-        "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237508.jpg",
-        "/Users/chan/Projects/Skincare/Test/wrinkle/drg_0000237368.jpg",
-        "/Users/chan/Projects/Skincare/Test/acne/drg_0000235845.jpg",
-        "/Users/chan/Projects/Skincare/Test/acne/drg_0000237524.jpg",
-    ]
+    # filelist = [
+    #     "/Users/chan/Projects/Skincare/Test/flushing/drg_0000235380.jpg",
+    #     "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237290.jpg",
+    #     "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237508.jpg",
+    #     "/Users/chan/Projects/Skincare/Test/wrinkle/drg_0000237368.jpg",
+    #     "/Users/chan/Projects/Skincare/Test/acne/drg_0000235845.jpg",
+    #     "/Users/chan/Projects/Skincare/Test/acne/drg_0000237524.jpg",
+    # ]
 
     for filename in filelist[:]:
         # filename = "/Users/chan/Projects/Skincare/Test/flushing/drg_0000237452.jpg"
         if filename.split(".")[1] == "jpg":
             print(path + filename)
-            image = cv2.imread(filename)
+            image = cv2.imread(path+filename)
 
-            res = run(faceMesh, image)
+            res = flushings.run(faceMesh, image)
             cv2.imshow("result", res)
             cv2.waitKey(0)
 
