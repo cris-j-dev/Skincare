@@ -1,8 +1,14 @@
 import os
+import sys
 import numpy as np
 import cv2
-import src.face_type.utils as utils
-import src.face_type.facemesh as facemesh
+import utils as utils
+import facemesh as facemesh
+# import src.face_type.utils as utils
+# import src.face_type.facemesh as facemesh
+sys.path.append('src')
+sys.path.append('src/face_type')
+
 
 class Acnes:
     def __init__(self):
@@ -58,7 +64,7 @@ class Acnes:
             contour += [x, y]
             area = cv2.contourArea(contour)
             # print(area)
-            cv2.drawContours(temp, [contour], -1, (0,0,255), -1)
+            cv2.drawContours(temp, [contour], -1, (43,0,255), -1)
 
         return temp
 
@@ -165,7 +171,7 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "data/"
+    path = "Test/"
     filelist = os.listdir(path)
     acens = Acnes()
     # print(filelist)
@@ -177,6 +183,6 @@ if __name__ == "__main__":
             res, res2 = acens.run(faceMesh, image)
             merged = np.hstack((image, res))
             merged = np.hstack((merged, res2))
-            # cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)
-            # cv2.waitKey(0)
+            cv2.imshow("result", merged)
+            cv2.waitKey(0)
+            # cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)
