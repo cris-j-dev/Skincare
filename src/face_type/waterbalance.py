@@ -23,7 +23,7 @@ class WaterBalance:
         mask = np.zeros(image.shape, dtype=np.uint8)
         cv2.drawContours(mask, [points], -1, (255,255,255), -1, cv2.LINE_AA)
 
-        alpha = 0.75
+        alpha = 0.85
 
         # cv2.ellipse(mask, (cx, cy), (lx, ly), 0, 0, 360, (255, 255, 255), -1)
         res = cv2.addWeighted(image, 1, mask, (1 - alpha), 0)  # 방식2
@@ -183,6 +183,7 @@ if __name__ == "__main__":
             water, oil = waterbalance.run(faceMesh, image)
             cv2.imshow("water", water)
             cv2.imshow("oil", oil)
-            cv2.imwrite("oil.png", oil)
-            cv2.imwrite("water2.png", water)
+            cv2.imwrite("oil_85.png", oil)
+            cv2.imwrite("water_85.png", water)
             cv2.waitKey(0)
+            exit()
