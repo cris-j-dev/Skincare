@@ -12,11 +12,11 @@ sys.path.append('src/face_type')
 import utils as utils
 import facemesh as facemesh
 
-class Wrinkles:
+class NasolabialFolds:
     def __init__(self):
         return
 
-    def wrinkles(self, image):
+    def nasolabial_folds(self, image):
 
 
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -46,9 +46,9 @@ class Wrinkles:
         res = image.copy()
         index_list = np.array(list(np.where(lesions==255)))
         for index in zip(index_list[0], index_list[1]):
-            res[y+index[0], x+index[1], 0] = 0
+            res[y+index[0], x+index[1], 0] = 255
             res[y+index[0], x+index[1], 1] = 0 
-            res[y+index[0], x+index[1], 2] = 0
+            res[y+index[0], x+index[1], 2] = 255
 
         return res 
 
@@ -67,12 +67,12 @@ class Wrinkles:
         fm.set_lines()
 
         copyed = image.copy()
-        wrinklesed_image = self.wrinkles(copyed)
+        nasolabial_folds_image = self.nasolabial_folds(copyed)
 
         # face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=uint8)
         # face_cheek_left_point  = np.array(fm.points_loc["face_cheek_left_point"], dtype=uint8)
-        face_cheek_right_point = np.array(fm.points_loc["face_smile_line_right_point"], dtype=np.int)
-        face_cheek_left_point  = np.array(fm.points_loc["face_smile_line_left_point"], dtype=np.int)
+        face_cheek_right_point = np.array(fm.points_loc["face_nasolabial_folds_right_point"], dtype=np.int)
+        face_cheek_left_point  = np.array(fm.points_loc["face_nasolabial_folds_left_point"], dtype=np.int)
         # face_forehead_point    = np.array(fm.points_loc["face_forehead_point"], dtype='uint8')
         # face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype='uint8')
         # face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype='uint8')
@@ -83,8 +83,8 @@ class Wrinkles:
         # face_chin_point        = fm.points_loc["face_chin_point"]
         # face_nose_point        = fm.points_loc["face_nose_point"]
 
-        cheek_right = self.crop(wrinklesed_image, face_cheek_right_point)
-        cheek_left  = self.crop(wrinklesed_image, face_cheek_left_point)
+        cheek_right = self.crop(nasolabial_folds_image, face_cheek_right_point)
+        cheek_left  = self.crop(nasolabial_folds_image, face_cheek_left_point)
         # forehead    = self.crop(res, face_forehead_point)
         # chin        = self.crop(res, face_chin_point)
         # nose        = self.crop(res, face_nose_point)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     path = "data/"
     filelist = os.listdir(path)
 
-    wrinkles = Wrinkles()
+    nasolabial_folds = NasolabialFolds()
 
     print(filelist)
     for filename in filelist[:]:
@@ -124,11 +124,11 @@ if __name__ == "__main__":
             print(path+filename)
             image = cv2.imread(path + filename)
 
-            res = wrinkles.run(faceMesh, image)
+            res = nasolabial_folds.run(faceMesh, image)
             merged = np.hstack((image, res))
 
             # cv2.imshow("original", image)
             cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_wrinkles.png", merged)
-            # cv2.waitKey(0)
+            # cv2.imwrite(path+filename.split(".")[0]+"_nasolabial_folds.png", merged)
+            cv2.waitKey(0)
             # exit()

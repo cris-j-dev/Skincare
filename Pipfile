@@ -9,6 +9,8 @@ matplotlib = "*"
 mediapipe = "*"
 pyqt5 = "*"
 opencv-python = "*"
+scikit-learn = "*"
+scikit-image = "*"
 
 [dev-packages]
 black = "*"
