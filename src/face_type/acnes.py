@@ -22,26 +22,20 @@ class Acnes:
         res2 = utils.color_balancing(image, points)
         res3 = cv2.cvtColor(res2, cv2.COLOR_BGR2Lab)
         _, max_a, avg_a = utils.get_mean_from_masked_image( res3[:, :, 1], points)
-        res4 = utils.crop_image(res3, points)
-
-        print(max_a)
         if max_a > 134:
+            res3 = utils.crop_image(res3, points)
 
-            alpha = res4[:, :, 1]
+            alpha = res3[:, :, 1]
             mask=cv2.inRange(alpha,0,10)
             alpha[mask==255]=avg_a
-
-            # kernel = np.ones((3, 3), np.uint8)
-            # alpha = cv2.dilate(alpha, kernel)
-            # alpha = cv2.dilate(alpha, kernel)
 
             alpha = cv2.normalize(alpha, None, 0, 255, cv2.NORM_MINMAX)
             res5, ma = utils.estimation_of_AC(alpha, 255)
             res6 = utils.morphology(res5)
             ret, res = cv2.threshold(res6, 230, 255, cv2.THRESH_BINARY)
 
-            return res, res4
-        return None, res4
+            return res
+        return None
 
 
     def draw(self, image, acnes, points):
@@ -115,6 +109,7 @@ class Acnes:
         return res
 
 
+
     def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
@@ -122,21 +117,20 @@ class Acnes:
         fm.set_points_loc(w=w, h=h)
         fm.set_lines()
 
-        # lab = image.copy()
-        lab = np.zeros((h, w, c), dtype=np.uint8)
+        res = image.copy()
         # print("res.shape : ", res.shape)
-        
+
         face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=np.int)
         face_cheek_left_point  = np.array(fm.points_loc["face_cheek_left_point"], dtype=np.int)
         face_forehead_point    = np.array(fm.points_loc["face_forehead_point"], dtype=np.int)
         face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype=np.int)
         face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype=np.int)
 
-        cheek_right, lab_right = self.acnes(image, face_cheek_right_point)
-        cheek_left , lab_left = self.acnes(image, face_cheek_left_point)
-        forehead   , lab_forehead = self.acnes(image, face_forehead_point)
-        chin       , lab_chin = self.acnes(image, face_chin_point)
-        nose       , lab_nose = self.acnes(image, face_nose_point)
+        cheek_right = self.acnes(image, face_cheek_right_point)
+        cheek_left  = self.acnes(image, face_cheek_left_point)
+        forehead    = self.acnes(image, face_forehead_point)
+        chin        = self.acnes(image, face_chin_point)
+        nose        = self.acnes(image, face_nose_point)
 
         res = self.draw(image, cheek_right, face_cheek_right_point)
         res = self.draw(res,   cheek_left , face_cheek_left_point)
@@ -144,16 +138,9 @@ class Acnes:
         res = self.draw(res,   chin       , face_chin_point)
         res = self.draw(res,   nose       , face_nose_point)
 
-        res2 = self.draw3(lab, lab_right, face_cheek_right_point)
-        res2 = self.draw3(res2,   lab_left , face_cheek_left_point)
-        res2 = self.draw3(res2,   lab_forehead   , face_forehead_point)
-        res2 = self.draw3(res2,   lab_chin       , face_chin_point)
-        res2 = self.draw3(res2,   lab_nose       , face_nose_point)
-
-
 
         # print("res.shape : ", res.shape)
-        return res, res2
+        return res
 
 
 if __name__ == "__main__":
@@ -180,9 +167,9 @@ if __name__ == "__main__":
      #       print(path+filename)
             image = cv2.imread(path + filename)
 
-            res, res2 = acens.run(faceMesh, image)
+            res = acens.run(faceMesh, image)
             merged = np.hstack((image, res))
-            merged = np.hstack((merged, res2))
-            cv2.imshow("result", merged)
-            cv2.waitKey(0)
-            # cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)
+            # merged = np.hstack((merged, res2))
+            # cv2.imshow("result", merged)
+            # cv2.waitKey(0)
+            cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)

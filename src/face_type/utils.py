@@ -1,6 +1,8 @@
 import io
 import base64
 import json
+import math
+from trace import Trace
 
 import numpy as np
 import cv2
@@ -12,6 +14,18 @@ def points_to_lines(points):
         res.append((points[i], points[i + 1]))
     res.append((points[-1], points[0]))
     return res
+
+def get_distance_point(p1, p2):
+    x = int(abs(p1[0] + p2[0])/2)
+    y = int(abs(p1[1] + p2[1])/2)
+    
+    return [x, y]
+
+def get_distance(p1, p2):
+    x = p1[0] - p2[0]
+    y = p1[1] - p2[1]
+    
+    return int(math.sqrt((x * x) + (y * y)))
 
 
 def get_point(label):
