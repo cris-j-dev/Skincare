@@ -129,6 +129,6 @@ if __name__ == "__main__":
 
             # cv2.imshow("original", image)
             cv2.imshow("result", merged)
-            # cv2.imwrite(path+filename.split(".")[0]+"_nasolabial_folds.png", merged)
-            cv2.waitKey(0)
+            cv2.imwrite(path+filename.split(".")[0]+"_nasolabial_folds.png", merged)
+            # cv2.waitKey(0)
             # exit()

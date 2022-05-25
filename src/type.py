@@ -42,11 +42,11 @@ class FaceType:
 
         re_image, w, h = resize_img.run(self.facemesh, image)
 
-        img_flushings = cv2.resize(self.flushings.run(self.facemesh, image, re_image), (w, h), cv2.INTER_LINEAR)
-        img_acnes     = cv2.resize(self.acnes.run(self.facemesh, image, re_image), (w, h), cv2.INTER_LINEAR)
-        img_lesions   = cv2.resize(self.lesions.run(self.facemesh, image, re_image), (w, h), cv2.INTER_LINEAR)
-        img_wrinkles  = cv2.resize(self.wrinkles.run(self.facemesh, image, re_image), (w, h), cv2.INTER_LINEAR)
-        img_pores     = cv2.resize(self.pores.run(self.facemesh, image, re_image), (w, h), cv2.INTER_LINEAR)
+        img_flushings = self.flushings.run(self.facemesh, image, re_image)
+        img_acnes     = self.acnes.run(self.facemesh, image, re_image)
+        img_lesions   = self.lesions.run(self.facemesh, image, re_image)
+        img_wrinkles  = self.wrinkles.run(self.facemesh, image, re_image)
+        img_pores     = self.pores.run(self.facemesh, image, re_image)
 
         # return img_acnes, temp
         return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores

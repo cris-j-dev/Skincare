@@ -69,7 +69,7 @@ class Acnes:
             area = cv2.contourArea(contour)
             print(area)
             # contour *= [x, y]
-            if area < 500:
+            if area < 1000:
                 # cv2.drawContours(temp, [contour], -1, 255, -1)
                 cv2.drawContours(temp, [contour], -1, (43,0,255), -1)
 
@@ -119,7 +119,7 @@ class Acnes:
         H, W, C = image.shape
         h, w, c = re_image.shape
         fm.set_points_loc(w=W, h=H)
-        fm.set_lines()
+        # fm.set_lines()
 
         # res = image.copy()
         face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=np.int)
@@ -182,9 +182,9 @@ if __name__ == "__main__":
             res = acens.run(faceMesh, image, re_image)
             # res = cv2.resize(res, (w, h), cv2.INTER_LINEAR)
 
-            # merged = np.hstack((re_image, res))
+            merged = np.hstack((image, res))
             # merged = np.hstack((merged, res2))
-            # cv2.imshow("result", merged)
-            cv2.imshow("result", res)
+            cv2.imshow("result", merged)
+            # cv2.imshow("result", res)
             cv2.waitKey(0)
             # cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)

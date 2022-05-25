@@ -46,9 +46,9 @@ class Wrinkles:
         res = image.copy()
         index_list = np.array(list(np.where(lesions==255)))
         for index in zip(index_list[0], index_list[1]):
-            res[y+index[0], x+index[1], 0] = 0
+            res[y+index[0], x+index[1], 0] = 255
             res[y+index[0], x+index[1], 1] = 0 
-            res[y+index[0], x+index[1], 2] = 0
+            res[y+index[0], x+index[1], 2] = 255
 
         return res 
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         ]
     )
 
-    path = "data/"
+    path = "Test/"
     filelist = os.listdir(path)
 
     wrinkles = Wrinkles()
@@ -130,5 +130,5 @@ if __name__ == "__main__":
             # cv2.imshow("original", image)
             cv2.imshow("result", merged)
             cv2.imwrite(path+filename.split(".")[0]+"_wrinkles.png", merged)
-            # cv2.waitKey(0)
+            cv2.waitKey(0)
             # exit()

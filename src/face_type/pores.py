@@ -130,5 +130,5 @@ if __name__ == "__main__":
             res = pores.run(faceMesh, image)
             merged = np.hstack((image, res))
             cv2.imshow("result", merged)
-            # cv2.imwrite(path+filename.split(".")[0]+"_pores.png", merged)
+            cv2.imwrite(path+filename.split(".")[0]+"_pores.png", merged)
             cv2.waitKey(0)

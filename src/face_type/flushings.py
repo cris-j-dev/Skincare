@@ -5,6 +5,7 @@ import cv2
 import math
 import utils as utils
 import facemesh as facemesh
+import resize as resize_img
 # import src.face_type.utils as utils
 # import src.face_type.facemesh as facemesh
 sys.path.append('src')
@@ -14,14 +15,13 @@ class Flushings:
     def __init__(self):
         return
 
-    def flushings(self, fm, image, label):
+    def flushings(self, fm, image, points):
 
-        points = np.array(fm.points_loc[label])
         labImage = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
         # min_l, max_l, mean_l = utils.get_mean_from_masked_image(labImage[:,:,0], fm.points_loc[label])
         min_a, max_a, mean_a = utils.get_mean_from_masked_image(
-            labImage[:, :, 1], fm.points_loc[label]
+            labImage[:, :, 1], points
         )
         # min_b, max_b, mean_b = utils.get_mean_from_masked_image(labImage[:,:,2], fm.points_loc[label])
 
@@ -63,26 +63,35 @@ class Flushings:
         return blended2
 
 
-    def run(self, fm, image):
+    def run(self, fm, image, re_image):
 
         multi_face_landmarks = fm.detect_face_point(image)
-        h, w, c = image.shape
-        fm.set_points_loc(w=w, h=h)
-        fm.set_lines()
+        H, W, C = image.shape
+        h, w, c = re_image.shape
 
-        res = image.copy()
-        mean_right = self.flushings(fm, image, "face_flushing_right_point")
-        mean_left = self.flushings(fm, image, "face_flushing_left_point")
+        # fm.set_lines()
+
+        fm.set_points_loc(w=W, h=H)
+        face_flushings_right_point = np.array(fm.points_loc["face_flushings_right_point"])
+        face_flushings_left_point = np.array(fm.points_loc["face_flushings_left_point"])
+
+        fm.set_points_loc(w=w, h=h)
+        re_face_flushings_right_point = np.array(fm.points_loc["face_flushings_right_point"])
+        re_face_flushings_left_point = np.array(fm.points_loc["face_flushings_left_point"])
+
+        mean_right = self.flushings(fm, re_image, re_face_flushings_right_point)
+        mean_left = self.flushings(fm, re_image, re_face_flushings_left_point)
+
 
         if (mean_right + mean_left) / 2 > 142:
             # print("flushing")
-            points = fm.points_loc["face_flushing_right_point"]
-            res = self.draw(image, points, -50)
+            points = face_flushings_right_point
+            image = self.draw(image, points, -35)
 
-            points = fm.points_loc["face_flushing_left_point"]
-            res = self.draw(res, points, 50)
+            points = face_flushings_left_point
+            image = self.draw(image, points, 35)
 
-        return res
+        return image
 
 
 if __name__ == "__main__":
@@ -123,57 +132,9 @@ if __name__ == "__main__":
         if filename.split(".")[1] == "jpg":
             print(path + filename)
             image = cv2.imread(path+filename)
+            re_image, w, h = resize_img.run(faceMesh, image)
 
-            res = flushings.run(faceMesh, image)
-            cv2.imshow("result", res)
+            res = flushings.run(faceMesh, image, re_image)
+            merged = np.hstack((image, res))
+            cv2.imshow("result", merged)
             cv2.waitKey(0)
-
-            # multi_face_landmarks = faceMesh.detect_face_point(image)
-
-            # h, w, c = image.shape
-            # faceMesh.set_points_loc(w=w, h=h)
-            # faceMesh.set_lines()
-
-            # mask = np.zeros((h, w, 3), dtype=np.uint8)
-            # # mask[:, :, 2] = 255
-
-            # res = faceMesh.draw(image)
-            # # flushing(faceMesh, image, "face_flushing_right_point2")
-            # # flushing(faceMesh, image, "face_flushing_left_point2")
-            # flushing(faceMesh, image, "face_flushing_right_point")
-            # flushing(faceMesh, image, "face_flushing_left_point")
-            # # flushing(faceMesh, image, "face_cheek_right_point")
-            # # flushing(faceMesh, image, "face_cheek_left_point")
-            # # flushing(faceMesh, image, "face_forehead_point")
-            # # flushing(faceMesh, image, "face_chin_point")
-            # # flushing(faceMesh, image, "face_nose_point")
-
-            # points = faceMesh.points_loc["face_flushing_right_point"]
-            # points = np.array(points, dtype=np.int)
-
-            # # cv2.drawContours(mask, [points], -1, (0, 0, 255), -1)
-
-            # # center
-            # M = cv2.moments(points)
-
-            # cx = int(M['m10']/M['m00'])
-            # cy = int(M['m01']/M['m00'])
-
-            # point = points[0] - points[5]
-            # c = math.sqrt((point[0]**2)+(point[1]**2))
-            # lx = round(c/2)
-            # ly = round(c/2*0.7)
-            # # import pdb;pdb.set_trace()
-
-            # alpha = 0.5
-
-            # cv2.imshow("image", image)
-            # cv2.imshow("mask", mask)
-            # cv2.ellipse(mask, (cx, cy), (lx, ly), -45, 0, 360, (0,0,255), -1)
-            # blended2 = cv2.addWeighted(image, 1, mask, (1-alpha), 0) # 방식2
-            # # cv2.circle(blended2, (cx, cy), 10, (0,0,255), -1)
-
-            # cv2.imshow("res", blended2)
-
-            # cv2.imwrite("./"+filename.split("/")[-1], res)
-            # # cv2.waitKey(0)
