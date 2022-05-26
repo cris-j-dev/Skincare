@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import utils as utils
 import facemesh as facemesh
+import resize as resize_img
 # import src.face_type.utils as utils
 # import src.face_type.facemesh as facemesh
 sys.path.append('src')
@@ -36,8 +37,36 @@ class Pores:
 
         return res
 
+    def draw(self, image, re_image, pores, points, re_points):
 
-    def draw(self, image, pores, points):
+        rect = cv2.boundingRect(points)
+        re_rect = cv2.boundingRect(re_points)
+        x, y, w, h = rect
+        _x, _y, _w, _h = re_rect
+        # croped = image[y : y + h, x : x + w].copy()
+
+        H, W, C = image.shape
+        _H, _W, _C = re_image.shape
+
+        # import pdb;pdb.set_trace()
+        res = image.copy()
+        index_list = np.array(list(np.where(pores==255)))
+        for index in zip(index_list[0], index_list[1]):
+            # x_point = int(index[0]/_w * w + x)
+            # y_point = int(index[1]/_h * h + y)
+            x_point = int(index[0]/_h * h + y)
+            y_point = int(index[1]/_w * w + x)
+            res[x_point, y_point, 0] = 0
+            res[x_point, y_point, 1] = 255
+            res[x_point, y_point, 2] = 0
+
+            # res[y+index[0], x+index[1], 0] = 0
+            # res[y+index[0], x+index[1], 1] = 255
+            # res[y+index[0], x+index[1], 2] = 0
+
+        return res 
+
+    def draw2(self, image, pores, points):
 
         rect = cv2.boundingRect(points)
         x, y, w, h = rect
@@ -76,9 +105,12 @@ class Pores:
     def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
-        h, w, c = image.shape
-        fm.set_points_loc(w=w, h=h)
-        fm.set_lines()
+
+        re_image, _, _ = resize_img.run(fm, image, 1000)
+
+        H, W, C = image.shape
+        h, w, c = re_image.shape
+        fm.set_points_loc(w=W, h=H)
 
         res = image.copy()
         face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=np.int)
@@ -86,17 +118,35 @@ class Pores:
         face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype=np.int)
         face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype=np.int)
 
-        pores_img = self.pores(image)
+        fm.set_points_loc(w=w, h=h)
+        re_face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=np.int)
+        re_face_cheek_left_point  = np.array(fm.points_loc["face_cheek_left_point"], dtype=np.int)
+        re_face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype=np.int)
+        re_face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype=np.int)
 
-        cheek_right = self.crop(pores_img, face_cheek_right_point)
-        cheek_left  = self.crop(pores_img, face_cheek_left_point)
-        chin        = self.crop(pores_img, face_chin_point)
-        nose        = self.crop(pores_img, face_nose_point)
+        # pores_img = self.pores(image)
+# 
+        # cheek_right = self.crop(pores_img, face_cheek_right_point)
+        # cheek_left  = self.crop(pores_img, face_cheek_left_point)
+        # chin        = self.crop(pores_img, face_chin_point)
+        # nose        = self.crop(pores_img, face_nose_point)
+# 
+        # res = self.draw(image, cheek_right, face_cheek_right_point)
+        # res = self.draw(res, cheek_left , face_cheek_left_point)
+        # res = self.draw(res, chin       , face_chin_point)
+        # res = self.draw(res, nose       , face_nose_point)
 
-        res = self.draw(image, cheek_right, face_cheek_right_point)
-        res = self.draw(res, cheek_left , face_cheek_left_point)
-        res = self.draw(res, chin       , face_chin_point)
-        res = self.draw(res, nose       , face_nose_point)
+        pores_img = self.pores(re_image)
+
+        cheek_right = self.crop(pores_img, re_face_cheek_right_point)
+        cheek_left  = self.crop(pores_img, re_face_cheek_left_point)
+        chin        = self.crop(pores_img, re_face_chin_point)
+        nose        = self.crop(pores_img, re_face_nose_point)
+
+        res = self.draw(image, re_image, cheek_right, face_cheek_right_point, re_face_cheek_right_point)
+        res = self.draw(res,   re_image, cheek_left , face_cheek_left_point, re_face_cheek_left_point)
+        res = self.draw(res,   re_image, chin       , face_chin_point, re_face_chin_point)
+        res = self.draw(res,   re_image, nose       , face_nose_point, re_face_nose_point)
 
         return res
 
@@ -129,6 +179,6 @@ if __name__ == "__main__":
 
             res = pores.run(faceMesh, image)
             merged = np.hstack((image, res))
-            cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_pores.png", merged)
-            cv2.waitKey(0)
+            # cv2.imshow("result", merged)
+            cv2.imwrite(path+filename.split(".")[0]+"_pores2.png", merged)
+            # cv2.waitKey(0)

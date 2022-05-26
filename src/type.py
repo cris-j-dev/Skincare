@@ -7,8 +7,6 @@ import src.face_type.utils as utils
 import src.face_type.facemesh as facemesh
 import src.face_type.resize as resize_img
 
-import cv2
-
 class FaceType:
     def __init__(self):
         self.facemesh = facemesh.FaceMesh(thickness=5)
@@ -40,13 +38,11 @@ class FaceType:
 
     def run(self, image):
 
-        re_image, w, h = resize_img.run(self.facemesh, image)
-
-        img_flushings = self.flushings.run(self.facemesh, image, re_image)
-        img_acnes     = self.acnes.run(self.facemesh, image, re_image)
-        img_lesions   = self.lesions.run(self.facemesh, image, re_image)
-        img_wrinkles  = self.wrinkles.run(self.facemesh, image, re_image)
-        img_pores     = self.pores.run(self.facemesh, image, re_image)
+        img_flushings = self.flushings.run(self.facemesh, image)
+        img_acnes     = self.acnes.run(self.facemesh, image)
+        img_lesions   = self.lesions.run(self.facemesh, image)
+        img_wrinkles  = self.wrinkles.run(self.facemesh, image)
+        img_pores     = self.pores.run(self.facemesh, image)
 
         # return img_acnes, temp
         return img_flushings, img_acnes, img_lesions, img_wrinkles, img_pores

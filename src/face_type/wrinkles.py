@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import cv2
 import skimage 
+import resize as resize_img
 # import src.face_type.utils as utils
 # import src.face_type.facemesh as facemesh
 
@@ -38,17 +39,25 @@ class Wrinkles:
 
         return res
 
-    def draw(self, image, lesions, points):
+    def draw(self, image, re_image, wrinkles, points, re_points):
 
         rect = cv2.boundingRect(points)
+        re_rect = cv2.boundingRect(re_points)
+
         x, y , w, h = rect
+        _x, _y , _w, _h = re_rect
+
+        H, W, C = image.shape
+        _H, _W, _C = re_image.shape
 
         res = image.copy()
-        index_list = np.array(list(np.where(lesions==255)))
+        index_list = np.array(list(np.where(wrinkles==255)))
         for index in zip(index_list[0], index_list[1]):
-            res[y+index[0], x+index[1], 0] = 255
-            res[y+index[0], x+index[1], 1] = 0 
-            res[y+index[0], x+index[1], 2] = 255
+            x_point = int(index[0]/_h * h + y)
+            y_point = int(index[1]/_w * w + x)
+            res[x_point, y_point, 0] = 0
+            res[x_point, y_point, 1] = 255
+            res[x_point, y_point, 2] = 255
 
         return res 
 
@@ -62,38 +71,35 @@ class Wrinkles:
     def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
-        h, w, c = image.shape
-        fm.set_points_loc(w=w, h=h)
-        fm.set_lines()
+        re_image, _, _ = resize_img.run(fm, image, 100)
+        H, W, C = image.shape
+        h, w, c = re_image.shape
 
-        copyed = image.copy()
+        # fm.set_lines()
+
+        copyed = re_image.copy()
         wrinklesed_image = self.wrinkles(copyed)
 
-        # face_cheek_right_point = np.array(fm.points_loc["face_cheek_right_point"], dtype=uint8)
-        # face_cheek_left_point  = np.array(fm.points_loc["face_cheek_left_point"], dtype=uint8)
+        fm.set_points_loc(w=W, h=H)
         face_cheek_right_point = np.array(fm.points_loc["face_smile_line_right_point"], dtype=np.int)
         face_cheek_left_point  = np.array(fm.points_loc["face_smile_line_left_point"], dtype=np.int)
-        # face_forehead_point    = np.array(fm.points_loc["face_forehead_point"], dtype='uint8')
-        # face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype='uint8')
-        # face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype='uint8')
 
-        # face_cheek_right_point = fm.points_loc["face_smile_line_right_point3"]
-        # face_cheek_left_point  = fm.points_loc["face_smile_line_left_point3"]
-        # face_forehead_point    = fm.points_loc["face_forehead_point"]
-        # face_chin_point        = fm.points_loc["face_chin_point"]
-        # face_nose_point        = fm.points_loc["face_nose_point"]
+        fm.set_points_loc(w=w, h=h)
+        re_face_cheek_right_point = np.array(fm.points_loc["face_smile_line_right_point"], dtype=np.int)
+        re_face_cheek_left_point  = np.array(fm.points_loc["face_smile_line_left_point"], dtype=np.int)
 
-        cheek_right = self.crop(wrinklesed_image, face_cheek_right_point)
-        cheek_left  = self.crop(wrinklesed_image, face_cheek_left_point)
-        # forehead    = self.crop(res, face_forehead_point)
-        # chin        = self.crop(res, face_chin_point)
-        # nose        = self.crop(res, face_nose_point)
+        # cheek_right = self.crop(wrinklesed_image, face_cheek_right_point)
+        # cheek_left  = self.crop(wrinklesed_image, face_cheek_left_point)
 
-        res = self.draw(image, cheek_right, face_cheek_right_point)
-        res = self.draw(res,   cheek_left , face_cheek_left_point)
-        # res = self.draw(res,   forehead   , face_forehead_point)
-        # res = self.draw(res,   chin       , face_chin_point)
-        # res = self.draw(res,   nose       , face_nose_point)
+        # res = self.draw(image, cheek_right, face_cheek_right_point)
+        # res = self.draw(res,   cheek_left , face_cheek_left_point)
+
+        cheek_right = self.crop(wrinklesed_image, re_face_cheek_right_point)
+        cheek_left  = self.crop(wrinklesed_image, re_face_cheek_left_point)
+
+        res = self.draw(image, re_image, cheek_right, face_cheek_right_point, re_face_cheek_right_point)
+        res = self.draw(res,   re_image, cheek_left , face_cheek_left_point, re_face_cheek_left_point)
+
 
         return res
 
@@ -124,11 +130,14 @@ if __name__ == "__main__":
             print(path+filename)
             image = cv2.imread(path + filename)
 
+            import time
+            start = time.time()
             res = wrinkles.run(faceMesh, image)
+            print(time.time() - start)
             merged = np.hstack((image, res))
 
             # cv2.imshow("original", image)
-            cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_wrinkles.png", merged)
-            cv2.waitKey(0)
+            # cv2.imshow("result", merged)
+            cv2.imwrite(path+filename.split(".")[0]+"_wrinkles3.png", merged)
+            # cv2.waitKey(0)
             # exit()

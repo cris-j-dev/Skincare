@@ -65,18 +65,17 @@ class Lesions:
         # mask[y:y+h, x:x+w,2] = lesions
 
         res = image.copy()
-        res2 = image.copy()
         index_list = np.array(list(np.where(lesions==255)))
 
         for index in zip(index_list[0], index_list[1]):
             x_point = int(index[0]/_h * h + y)
             y_point = int(index[1]/_w * w + x)
-            # res[x_point, y_point, 0] = 0
-            # res[x_point, y_point, 1] = 255
-            # res[x_point, y_point, 2] = 255
-            res[y+index[0], x+index[1], 0] = 0
-            res[y+index[0], x+index[1], 1] = 255
-            res[y+index[0], x+index[1], 2] = 255
+            res[x_point, y_point, 0] = 0
+            res[x_point, y_point, 1] = 255
+            res[x_point, y_point, 2] = 255
+            # res[y+index[0], x+index[1], 0] = 0
+            # res[y+index[0], x+index[1], 1] = 255
+            # res[y+index[0], x+index[1], 2] = 255
 
 
         # alpha = 1.5 
@@ -91,9 +90,10 @@ class Lesions:
         # res = res - bg_img
         return 255 - res
 
-    def run(self, fm, image, reimage):
-
+    def run(self, fm, image):
         multi_face_landmarks = fm.detect_face_point(image)
+        re_image, _, _ = resize_img.run(fm, image, 1000)
+
         H, W, C = image.shape
         h, w, c = re_image.shape
         fm.set_points_loc(w=W, h=H)
@@ -119,6 +119,14 @@ class Lesions:
         forehead    = self.crop(lesions_img, face_forehead_point)
         chin        = self.crop(lesions_img, face_chin_point)
         nose        = self.crop(lesions_img, face_nose_point)
+
+        # lesions_img = self.lesions(re_image)
+
+        # cheek_right = self.crop(lesions_img, re_face_cheek_right_point)
+        # cheek_left  = self.crop(lesions_img, re_face_cheek_left_point)
+        # forehead    = self.crop(lesions_img, re_face_forehead_point)
+        # chin        = self.crop(lesions_img, re_face_chin_point)
+        # nose        = self.crop(lesions_img, re_face_nose_point)
 
         res = self.draw(image, re_image, cheek_right, face_cheek_right_point, re_face_cheek_right_point)
         res = self.draw(res,   re_image, cheek_left , face_cheek_left_point, re_face_cheek_left_point)
@@ -155,10 +163,8 @@ if __name__ == "__main__":
         if filename.split(".")[-1] == "jpg":
             print(path+filename)
             image = cv2.imread(path + filename)
-            re_image, w, h = resize_img.run(faceMesh, image)
-
-            res = lesions.run(faceMesh, image, re_image)
+            res = lesions.run(faceMesh, image)
             merged = np.hstack((image, res))
             cv2.imshow("result", merged)
-            cv2.imwrite(path+filename.split(".")[0]+"_lesions.png", merged)
+            cv2.imwrite(path+filename.split(".")[0]+"_lesions2.png", merged)
             # cv2.waitKey(0)

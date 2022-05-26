@@ -63,9 +63,10 @@ class Flushings:
         return blended2
 
 
-    def run(self, fm, image, re_image):
+    def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
+        re_image, _, _ = resize_img.run(fm, image, 100)
         H, W, C = image.shape
         h, w, c = re_image.shape
 
@@ -132,9 +133,8 @@ if __name__ == "__main__":
         if filename.split(".")[1] == "jpg":
             print(path + filename)
             image = cv2.imread(path+filename)
-            re_image, w, h = resize_img.run(faceMesh, image)
 
-            res = flushings.run(faceMesh, image, re_image)
+            res = flushings.run(faceMesh, image)
             merged = np.hstack((image, res))
             cv2.imshow("result", merged)
-            cv2.waitKey(0)
+            # cv2.waitKey(0)

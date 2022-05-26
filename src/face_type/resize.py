@@ -11,7 +11,7 @@ sys.path.append('src')
 sys.path.append('src/face_type')
 
 
-def run(fm, image):
+def run(fm, image, size):
 
     multi_face_landmarks = fm.detect_face_point(image)
     h, w, c = image.shape
@@ -27,7 +27,7 @@ def run(fm, image):
     y = utils.get_distance_point(eye_point[2], eye_point[3])
     eye_distance = utils.get_distance(x, y)
     
-    W = int(100 * w / eye_distance)
+    W = int(size * w / eye_distance)
     H = int(W * h / w)
     resize_img = cv2.resize(res, (W, H), cv2.INTER_LINEAR)
 

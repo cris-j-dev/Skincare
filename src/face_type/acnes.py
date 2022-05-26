@@ -67,7 +67,7 @@ class Acnes:
             contour += [x, y]
             contour = contour.astype('int32')
             area = cv2.contourArea(contour)
-            print(area)
+            # print(area)
             # contour *= [x, y]
             if area < 1000:
                 # cv2.drawContours(temp, [contour], -1, 255, -1)
@@ -113,9 +113,11 @@ class Acnes:
 
 
 
-    def run(self, fm, image, re_image):
+    def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
+        re_image, _, _ = resize_img.run(fm, image, 100)
+
         H, W, C = image.shape
         h, w, c = re_image.shape
         fm.set_points_loc(w=W, h=H)
