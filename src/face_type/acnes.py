@@ -116,7 +116,7 @@ class Acnes:
     def run(self, fm, image):
 
         multi_face_landmarks = fm.detect_face_point(image)
-        re_image, _, _ = resize_img.run(fm, image, 100)
+        re_image, _, _ = resize_img.run(fm, image, 500)
 
         H, W, C = image.shape
         h, w, c = re_image.shape
@@ -146,11 +146,11 @@ class Acnes:
         chin        = self.acnes(re_image, re_face_chin_point)
         nose        = self.acnes(re_image, re_face_nose_point)
 
-        res = self.draw(image, re_image, cheek_right,face_cheek_right_point, re_face_cheek_right_point)
-        res = self.draw(res, re_image, cheek_left ,  face_cheek_left_point, re_face_cheek_left_point)
-        res = self.draw(res, re_image, forehead   ,  face_forehead_point, re_face_forehead_point)
-        res = self.draw(res, re_image, chin       ,  face_chin_point, re_face_chin_point)
-        res = self.draw(res, re_image, nose       ,  face_nose_point, re_face_nose_point)
+        res = self.draw(image, re_image, cheek_right, face_cheek_right_point, re_face_cheek_right_point)
+        res = self.draw(res,   re_image, cheek_left , face_cheek_left_point, re_face_cheek_left_point)
+        res = self.draw(res,   re_image, forehead   , face_forehead_point, re_face_forehead_point)
+        res = self.draw(res,   re_image, chin       , face_chin_point, re_face_chin_point)
+        res = self.draw(res,   re_image, nose       , face_nose_point, re_face_nose_point)
 
 
         return res
@@ -179,14 +179,13 @@ if __name__ == "__main__":
         if filename.split(".")[-1] == "jpg":
      #       print(path+filename)
             image = cv2.imread(path + filename)
-            re_image, w, h = resize_img.run(faceMesh, image)
 
-            res = acens.run(faceMesh, image, re_image)
+            res = acens.run(faceMesh, image)
             # res = cv2.resize(res, (w, h), cv2.INTER_LINEAR)
 
             merged = np.hstack((image, res))
             # merged = np.hstack((merged, res2))
-            cv2.imshow("result", merged)
+            # cv2.imshow("result", merged)
             # cv2.imshow("result", res)
-            cv2.waitKey(0)
-            # cv2.imwrite(path+filename.split(".")[0]+"_acnes.png", merged)
+            # cv2.waitKey(0)
+            cv2.imwrite(path+filename.split(".")[0]+"_acnes3.png", merged)
