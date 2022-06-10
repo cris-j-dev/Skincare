@@ -16,7 +16,41 @@ class Lesions:
     def __init__(self):
         return
 
-    def lesions(self, image, points):
+    def lesions(self, image):
+
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (25, 25), 0, borderType=cv2.BORDER_ISOLATED)
+        kernel = np.ones((3, 3), np.uint8)
+        blur = cv2.dilate(blur, kernel)
+        blur = cv2.dilate(blur, kernel)
+        res = cv2.adaptiveThreshold(
+            blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2
+        )
+
+        return res
+
+    def draw(self, image, lesions, points):
+
+        rect = cv2.boundingRect(points)
+
+        x, y , w, h = rect
+
+        H, W, C = image.shape
+
+        res = image.copy()
+        index_list = np.array(list(np.where(lesions==255)))
+
+        for index in zip(index_list[0], index_list[1]):
+            x_point = int(index[0] + y)
+            y_point = int(index[1] + x)
+            res[x_point, y_point, 0] = 0
+            res[x_point, y_point, 1] = 255
+            res[x_point, y_point, 2] = 255
+
+        return res
+
+
+    def lesions2(self, image, points):
 
         # 1 Crop and get average, min, max value
         # 2 Color Balancing
@@ -56,11 +90,11 @@ class Lesions:
 
             return res
         return None
+
     
-    def draw(self, image, re_image, acnes, points, re_points):
+    def draw2(self, image, re_image, acnes, points, re_points):
 
         if acnes is None:
-            print("no acnes")
             return image
 
         rect = cv2.boundingRect(points)
@@ -73,12 +107,9 @@ class Lesions:
 
         acnes = acnes.astype(np.uint8)
 
-        # temp = np.zeros((h,w), dtype=np.uint8)
-        # temp = np.zeros((H, W), dtype=np.uint8)
         temp = image.copy()
         contours, hirerarchy = cv2.findContours(acnes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-        # import pdb;pdb.set_trace()
         for contour in contours:
             contour = contour.astype('float32')
             contour /= [_w, _h]
@@ -88,90 +119,19 @@ class Lesions:
             area = cv2.contourArea(contour)
             # contour *= [x, y]
             if area > 180 and area < 800:
-                print(area)
-                # cv2.drawContours(temp, [contour], -1, 255, -1)
+                # print(area)
                 cv2.drawContours(temp, [contour], -1, (0,255,255), -1)
             # cv2.drawContours(temp, [contour], -1, (0,255,255), -1)
 
         return temp
 
 
-    def lesions3(self, image):
-
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (25, 25), 0, borderType=cv2.BORDER_ISOLATED)
-        kernel = np.ones((3, 3), np.uint8)
-        blur = cv2.dilate(blur, kernel)
-        blur = cv2.dilate(blur, kernel)
-        res = cv2.adaptiveThreshold(
-            blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2
-        )
-
-
-        return res
-
-    def lesions2(self, image, points):
-
-        # image = fm.crop(image, label)
-        temp = np.zeros((image.shape), dtype=np.uint8)
-        bg = utils.crop_image(temp, points, "white")
-        bg = cv2.cvtColor(bg, cv2.COLOR_BGR2GRAY)
-        res3 = utils.crop_image(image, points, "black")
-        gray = cv2.cvtColor(res3, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (25, 25), 0, borderType=cv2.BORDER_ISOLATED)
-
-        res = cv2.adaptiveThreshold(
-            blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2
-        )
-
-        return res
-
-    def draw3(self, image, re_image, lesions, points, re_points):
-
-        # if lesions is None:
-        #     return image
-        rect = cv2.boundingRect(points)
-        re_rect = cv2.boundingRect(re_points)
-
-        x, y , w, h = rect
-        _x, _y , _w, _h = re_rect
-
-        H, W, C = image.shape
-        _H, _W, _C = re_image.shape
-
-        # mask = np.zeros((H, W, 3), dtype=np.uint8)
-
-        # mask[y:y+h, x:x+w,1] = lesions
-        # mask[y:y+h, x:x+w,2] = lesions
-
-        res = image.copy()
-        index_list = np.array(list(np.where(lesions==255)))
-
-        for index in zip(index_list[0], index_list[1]):
-            x_point = int(index[0]/_h * h + y)
-            y_point = int(index[1]/_w * w + x)
-            res[x_point, y_point, 0] = 0
-            res[x_point, y_point, 1] = 255
-            res[x_point, y_point, 2] = 255
-            # res[y+index[0], x+index[1], 0] = 0
-            # res[y+index[0], x+index[1], 1] = 255
-            # res[y+index[0], x+index[1], 2] = 255
-
-
-        # alpha = 1.5 
-        # res = cv2.addWeighted(image, 1, mask, (1-alpha), 0)
-
-        return res 
-
     def crop(self, image, points):
         res = utils.crop_image(image, points, "white")
-        # bg_img = np.zeros_like(image, np.uint8)
-        # bg_img = utils.crop_image(bg_img, points)
-        # res = res - bg_img
         return 255 - res
 
     def run(self, fm, image):
-        multi_face_landmarks = fm.detect_face_point(image)
+
         re_image, _, _ = resize_img.run(fm, image, 1000)
 
         H, W, C = image.shape
@@ -192,20 +152,20 @@ class Lesions:
         re_face_chin_point        = np.array(fm.points_loc["face_chin_point"], dtype=np.int)
         # re_face_nose_point        = np.array(fm.points_loc["face_nose_point"], dtype=np.int)
 
-        # lesions_img = self.lesions3(image)
-        cheek_right = self.lesions(re_image, re_face_cheek_right_point)
-        cheek_left  = self.lesions(re_image, re_face_cheek_left_point)
-        forehead    = self.lesions(re_image, re_face_forehead_point)
-        chin        = self.lesions(re_image, re_face_chin_point)
+        lesions_img = self.lesions(image)
+        # cheek_right = self.lesions(re_image, re_face_cheek_right_point)
+        # cheek_left  = self.lesions(re_image, re_face_cheek_left_point)
+        # chin        = self.lesions(re_image, re_face_chin_point)
+        forehead    = self.lesions2(re_image, re_face_forehead_point)
         # nose        = self.lesions3(re_image, re_face_nose_point)
 
-        # cheek_right = self.crop(lesions_img, face_cheek_right_point)
-        # cheek_left  = self.crop(lesions_img, face_cheek_left_point)
-        # forehead    = self.crop(lesions_img, face_forehead_point)
-        # chin        = self.crop(lesions_img, face_chin_point)
+        cheek_right = self.crop(lesions_img, face_cheek_right_point)
+        cheek_left  = self.crop(lesions_img, face_cheek_left_point)
+        chin        = self.crop(lesions_img, face_chin_point)
         # nose        = self.crop(lesions_img, face_nose_point)
+        # forehead    = self.crop(lesions_img, face_forehead_point)
 
-        # lesions_img = self.lesions(re_image)
+        # lesions_img = self.lesions3(re_image)
 
         # cheek_right = self.crop(lesions_img, re_face_cheek_right_point)
         # cheek_left  = self.crop(lesions_img, re_face_cheek_left_point)
@@ -213,11 +173,11 @@ class Lesions:
         # chin        = self.crop(lesions_img, re_face_chin_point)
         # nose        = self.crop(lesions_img, re_face_nose_point)
 
-        res = self.draw(image, re_image, cheek_right, face_cheek_right_point, re_face_cheek_right_point)
-        res = self.draw(res,   re_image, cheek_left , face_cheek_left_point, re_face_cheek_left_point)
-        res = self.draw(res,   re_image, forehead   , face_forehead_point, re_face_forehead_point)
-        res = self.draw(res,   re_image, chin       , face_chin_point, re_face_chin_point)
-        # res = self.draw3(res,   re_image, nose       , face_nose_point, re_face_nose_point)
+        res = self.draw(image,   cheek_right, face_cheek_right_point)
+        res = self.draw(res,   cheek_left , face_cheek_left_point)
+        res = self.draw(res,   chin       , face_chin_point)
+        res = self.draw2(res,   re_image, forehead   , face_forehead_point, re_face_forehead_point)
+        # res = self.draw(res,   re_image, nose       , face_nose_point, re_face_nose_point)
 
         return res
 
