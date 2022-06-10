@@ -2,8 +2,11 @@
 *.jpg
 *.bmp
 *.zip
+*.pdf
+*.key
 .DS_Store
 
 *.pyc
 
 settings.json
+

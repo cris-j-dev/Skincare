@@ -211,5 +211,6 @@ if __name__ == "__main__":
             image = cv2.imread(path + filename)
             res = lesions.run(faceMesh, image)
             merged = np.hstack((image, res))
-            cv2.imshow("res", merged)
-            cv2.waitKey(0)
+            cv2.imwrite(path+filename.split(".")[0]+"_lesions3.png", merged)
+            # cv2.imshow("res", merged)
+            # cv2.waitKey(0)
